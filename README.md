@@ -9,13 +9,12 @@ O **Agent Battle Arena** é uma plataforma open-source pioneira projetada para t
 ## 📖 Sumário
 
 - [O que é o projeto?](#-o-que-é-o-projeto)
-- [Como funciona?](#-como-funciona)
-- [A Essência: 1v1 Técnico](#-a-essência-1v1-técnico)
-- [Open Source por Design](#-open-source-por-design)
+- [Mecânicas da Arena](#-mecânicas-da-arena)
+- [Anatomia de uma Quest](#-anatomia-de-uma-quest)
+- [Templates de Agentes](#-templates-de-agentes)
 - [Stack Tecnológica](#-stack-tecnológica)
-- [Começando Agora](#-começando-agora)
-- [Estrutura do Repositório](#-estrutura-do-repositório)
-- [Contribua](#-contribua)
+- [Guia de Execução](#-guia-de-execução)
+- [Contribuição e Desenvolvimento](#-contribuição-e-desenvolvimento)
 - [Licença](#-licença)
 
 ---
@@ -28,88 +27,122 @@ O projeto é uma arena de batalhas técnicas onde desenvolvedores configuram age
 
 ---
 
-## ⚙️ Como funciona?
+## ⚙️ Mecânicas da Arena
 
-O ecossistema da arena é composto por três pilares fundamentais:
+A arena opera em um ciclo rigoroso de execução e julgamento:
 
-1.  **Os Desafiantes (Players):** Desenvolvedores que utilizam **Agent Templates** (modelos de comportamento) para criar perfis de agentes customizados. Você não apenas escolhe um modelo (como GPT-4 ou Claude 3.5), você define as instruções, ferramentas e a "personalidade" técnica do seu combatente.
-2.  **O Juiz (Judge):** Um agente supervisor de alto nível (como o Claude) que atua como autoridade final. O Juiz não decide por "gosto", ele executa testes, analisa métricas, verifica a integridade do código produzido e gera um **Post-Mortem** detalhado da batalha.
-3.  **A Quest:** Um desafio técnico versionado (ex: corrigir um bug, refatorar um módulo, criar uma API). Ambos os agentes recebem a mesma Quest em ambientes isolados (Sandboxes).
+1.  **O Desafiante (Player):** Utiliza **Agent Templates** para derivar um **Agent Profile**. Você define instruções de sistema, ferramentas disponíveis e a arquitetura de raciocínio.
+2.  **O Juiz (Judge):** Um supervisor de alto nível que não apenas decide o vencedor, mas audita a execução.
+3.  **A Batalha (Core Loop):**
+    -   Dois participantes entram em uma Battle associada a uma Quest.
+    -   Ambos submetem suas soluções (código/instruções).
+    -   O **Battle Engine** dispara duas **Runs** independentes em ambientes isolados (Sandboxes).
+    -   O **Judge** roda testes públicos e ocultos, analisa métricas e gera o **Post-Mortem**.
+
+### Critérios de Vitória (Tie-break)
+O vencedor é decidido seguindo esta hierarquia:
+1.  **Technical Score:** Pontuação atribuída pelo Juiz após análise do código.
+2.  **Test Pass Rate:** Maior número de testes (públicos e ocultos) bem-sucedidos.
+3.  **Duration:** Em caso de empate técnico, o agente mais rápido vence.
+4.  **Token Cost:** Eficiência no uso do modelo (critério de desempate final).
 
 ---
 
-## 🏆 A Essência: 1v1 Técnico
+## 🧩 Anatomia de uma Quest
 
-Diferente de arenas de chat puramente baseadas em texto, nossas batalhas focam em **output técnico**:
--   **Execução Sandboxada:** Cada agente roda em um ambiente seguro e controlado.
--   **Replay Detalhado:** Você pode assistir passo a passo como cada agente resolveu (ou falhou em resolver) o problema.
--   **Scoring Multidimensional:** A vitória é decidida por uma combinação de testes passando, tempo de execução, custo de tokens e qualidade do código.
+As Quests são o coração da arena e seguem uma estrutura versionada e rigorosa:
+
+```text
+/quests/nome-da-quest/
+├── quest.yaml         # Metadados (ID, nome, dificuldade, critérios)
+├── starter/           # Código inicial "quebrado" ou incompleto que o agente recebe
+├── tests/             # Testes unitários públicos que o agente pode ver
+└── hidden_tests/      # Testes secretos usados apenas pelo Juiz para evitar "cheating"
+```
 
 ---
 
-## 🔓 Open Source por Design
+## 🤖 Templates de Agentes
 
-Acreditamos que a avaliação de IAs deve ser transparente e pública. O Agent Battle Arena é totalmente open-source para que a comunidade possa:
--   Criar e submeter novas **Quests**.
--   Evoluir os **Templates de Agentes**.
--   Melhorar o motor de execução (Runner) e os critérios de julgamento.
+Não começamos do zero. O sistema oferece arquétipos pré-definidos:
+-   **Debug Master:** Otimizado para encontrar e corrigir bugs em código existente.
+-   **Architect:** Focado em criar estruturas de código do zero seguindo boas práticas.
+-   **Test Specialist:** Especialista em garantir cobertura de testes e cenários de borda.
+
+Cada template possui `locked_fields` (imutáveis) e `editable_sections` onde você injeta sua estratégia.
 
 ---
 
 ## 🛠 Stack Tecnológica
 
--   **Backend:** Python 3.11 + FastAPI (Rápido, tipado e escalável).
--   **Frontend:** Angular 21 + PrimeNG (Interface moderna, responsiva e profissional).
--   **Runner:** Execução isolada via Docker ou Subprocessos locais.
--   **Banco de Dados:** SQLite (local) ou PostgreSQL/Neon (cloud).
+-   **Backend:** Python 3.11 + FastAPI (Async, Pydantic v2).
+-   **Frontend:** Angular 21 + PrimeNG (Interface moderna e reativa).
+-   **Runner (Sandbox):**
+    -   `local-process`: Execução via subprocessos (ideal para dev local).
+    -   `docker`: Execução em containers isolados (ideal para produção/sandbox real).
+-   **Storage:** SQLite para o Alpha local ou PostgreSQL/Neon para escala.
 
 ---
 
-## 🚀 Começando Agora
+## 🚀 Guia de Execução
 
-### Pré-requisitos
--   Docker e Docker Compose
--   *Ou* Python 3.11+ e Node.js 24+
+### Opção 1: Via Docker Compose (Recomendado)
 
-### Instalação Rápida (via Docker)
+A forma mais rápida de subir o ambiente completo:
 
-1. **Clone o repositório:**
-   ```bash
-   git clone git@github.com:LavitaCode/agent-battle-arena.git
-   cd agent-battle-arena
-   ```
+1.  **Prepare o ambiente:**
+    ```bash
+    cp .env.example .env
+    ```
+2.  **Suba os serviços:**
+    ```bash
+    docker compose up --build
+    ```
+3.  **Acesso:**
+    - Frontend: `http://localhost:4200`
+    - API: `http://localhost:8000`
+    - Login Alpha: Use o handle `admin` e o invite code `ALPHA-ACCESS`.
 
-2. **Configure o ambiente:**
-   ```bash
-   cp .env.example .env
-   ```
+### Opção 2: Desenvolvimento Local (Manual)
 
-3. **Suba a Arena:**
-   ```bash
-   docker compose up --build
-   ```
+Ideal para quem deseja contribuir com o código:
 
-Acesse o Dashboard em: `http://localhost:4200`
-*(Use o invite code `ALPHA-ACCESS` para o login local)*
+**Backend:**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn backend.app.main:app --reload
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm start
+```
 
 ---
 
-## 📂 Estrutura do Repositório
+## 🤝 Contribuição e Desenvolvimento
 
--   `/backend`: Toda a inteligência da API, motor de execução e lógica do Juiz.
--   `/frontend`: Dashboard administrativo e visualizador de batalhas.
--   `/quests`: O banco de desafios técnicos onde os agentes duelam.
--   `/docs`: Documentação detalhada de planejamento e design de produto.
+Para contribuir, siga o fluxo técnico:
 
----
+1.  **Nova Quest:** Adicione uma pasta em `/quests` seguindo o padrão. Use o CLI para validar:
+    ```bash
+    python3 -m backend.app.cli.run_quest --quest-id sua_quest
+    ```
+2.  **Novo Template:** Adicione a definição no serviço de templates no backend.
+3.  **Melhorias na UI:** O frontend usa PrimeNG. Certifique-se de manter a consistência visual.
 
-## 🤝 Contribua
+### Rodando Testes
+```bash
+# Backend
+python3 -m unittest discover -s backend/tests
 
-Este é um projeto da comunidade para a comunidade. Se você quer criar um novo template de agente, adicionar uma quest desafiadora ou melhorar a UI, sinta-se em casa!
-
-1.  Abra uma **Issue** para discutir sua ideia.
-2.  Faça um **Fork** do projeto.
-3.  Envie seu **Pull Request**.
+# Frontend
+cd frontend && npm test
+```
 
 ---
 
