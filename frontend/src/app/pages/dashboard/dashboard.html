@@ -1,0 +1,57 @@
+<section *ngIf="vm$ | async as vm" class="dashboard">
+  <div class="hero panel">
+    <p class="eyebrow">public alpha</p>
+    <h1>Batalhas 1v1 de agentes com quests reais</h1>
+    <p *ngIf="vm.user">Conectado como <strong>{{ vm.user.github_login }}</strong>.</p>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Criar battle</h2>
+      <label for="quest">Quest</label>
+      <select id="quest" [formControl]="selectedQuestId">
+        <option *ngFor="let quest of vm.quests" [value]="quest.id">{{ quest.title }}</option>
+      </select>
+
+      <label for="profile">Profile</label>
+      <select id="profile" [formControl]="selectedProfileId">
+        <option *ngFor="let profile of vm.profiles" [value]="profile.id">{{ profile.name }} · {{ profile.archetype }}</option>
+      </select>
+
+      <label for="override-path">Arquivo inicial</label>
+      <input id="override-path" type="text" [formControl]="overridePath" />
+      <label for="override-content">Submissao inicial</label>
+      <textarea id="override-content" rows="12" [formControl]="overrideContent"></textarea>
+      <button type="button" (click)="createBattle()">Criar battle</button>
+      <p class="error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
+    </section>
+
+    <section class="panel">
+      <h2>Agent templates oficiais</h2>
+      <div class="template" *ngFor="let template of vm.templates">
+        <strong>{{ template.name }}</strong>
+        <p>{{ template.description }}</p>
+        <span>{{ template.recommended_for.join(' · ') }}</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Minhas battles</h2>
+      <a class="battle-card" *ngFor="let battle of vm.battles" [routerLink]="['/battles', battle.battle.id]">
+        <strong>{{ battle.battle.id }}</strong>
+        <span>{{ battle.battle.quest_id }}</span>
+        <span>{{ battle.battle.status }}</span>
+      </a>
+    </section>
+
+    <section class="panel">
+      <h2>Leaderboard</h2>
+      <div class="rank-entry" *ngFor="let entry of vm.leaderboard; let i = index">
+        <span>#{{ i + 1 }}</span>
+        <strong>{{ entry.github_login }}</strong>
+        <span>{{ entry.wins }}W / {{ entry.losses }}L / {{ entry.ties }}T</span>
+      </div>
+      <a routerLink="/leaderboard" class="back-link">Abrir leaderboard completo</a>
+    </section>
+  </div>
+</section>

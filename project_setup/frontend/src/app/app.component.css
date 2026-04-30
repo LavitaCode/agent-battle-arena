@@ -1,0 +1,13 @@
+/* Styles for the AppComponent. Customize as needed. */
+h1 {
+  color: #333;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+p {
+  max-width: 600px;
+  margin: 1rem auto;
+  line-height: 1.5;
+  text-align: center;
+}

@@ -1,0 +1,84 @@
+:host {
+  color: #f5f7fb;
+  display: block;
+  min-height: 100dvh;
+}
+
+.shell {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at top left, rgba(72, 172, 255, 0.24), transparent 30%),
+    radial-gradient(circle at top right, rgba(92, 232, 174, 0.2), transparent 28%),
+    linear-gradient(180deg, #08111f 0%, #0d1b2f 100%);
+}
+
+.topbar {
+  align-items: center;
+  backdrop-filter: blur(18px);
+  background: rgba(7, 12, 22, 0.72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  align-items: center;
+  color: #f7fbff;
+  display: inline-flex;
+  gap: 0.6rem;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.nav {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.nav a {
+  border-radius: 999px;
+  color: #b8c7dd;
+  padding: 0.55rem 0.9rem;
+  text-decoration: none;
+}
+
+.nav a.active,
+.nav a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.content {
+  margin: 0 auto;
+  max-width: 1120px;
+  padding: 1.5rem;
+}
+
+.system-strip {
+  align-items: center;
+  color: #a8bed8;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  gap: 0.65rem;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.system-strip span {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  display: inline-flex;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+}

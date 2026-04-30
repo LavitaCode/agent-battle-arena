@@ -1,0 +1,71 @@
+<section *ngIf="quest$ | async as quest; else missingQuest" class="lobby">
+  <div class="lobby__main">
+    <p class="eyebrow">quest lobby</p>
+    <h1>{{ quest.title }}</h1>
+    <p class="description">{{ quest.description }}</p>
+
+    <div class="facts">
+      <div><span>Dificuldade</span><strong>{{ quest.difficulty }}</strong></div>
+      <div><span>Modo</span><strong>{{ quest.mode }}</strong></div>
+      <div><span>Tempo</span><strong>{{ quest.time_limit_minutes }} min</strong></div>
+    </div>
+
+    <div class="panel">
+      <h2>Requisitos</h2>
+      <ul>
+        <li *ngFor="let requirement of quest.requirements">{{ requirement }}</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h2>Regras proibidas</h2>
+      <ul>
+        <li *ngFor="let rule of quest.forbidden_actions">{{ rule }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <aside class="lobby__sidebar">
+    <div class="panel">
+      <h2>Agent Profile</h2>
+      <p>Selecione o profile que vai disparar a run local.</p>
+      <select [formControl]="selectedProfileId">
+        <option *ngFor="let profile of (profiles$ | async)" [value]="profile.id">
+          {{ profile.name }} · {{ profile.archetype }}
+        </option>
+      </select>
+      <ng-container *ngIf="starterFiles$ | async as starterFiles">
+        <label class="field-label" for="starter-file">Arquivo starter</label>
+        <select
+          id="starter-file"
+          [formControl]="overridePath"
+          (change)="useStarterFile(overridePath.value)"
+        >
+          <option *ngFor="let file of starterFiles" [value]="file.path">
+            {{ file.path }}
+          </option>
+        </select>
+      </ng-container>
+      <label class="field-label" for="override-path">Arquivo opcional para sobrescrever</label>
+      <input id="override-path" type="text" [formControl]="overridePath" />
+      <label class="field-label" for="override-content">Conteudo opcional do workspace</label>
+      <textarea
+        id="override-content"
+        rows="12"
+        [formControl]="overrideContent"
+        placeholder="Edite aqui o starter real da quest para ver diff e impacto nos testes."
+      ></textarea>
+      <button type="button" (click)="startRun(quest)">Iniciar run</button>
+      <p class="error" *ngIf="errorMessage.value">{{ errorMessage.value }}</p>
+    </div>
+
+    <a routerLink="/quests" class="back-link">Voltar para quests</a>
+  </aside>
+</section>
+
+<ng-template #missingQuest>
+  <section class="panel missing">
+    <h1>Quest nao encontrada</h1>
+    <a routerLink="/quests" class="back-link">Voltar para quests</a>
+  </section>
+</ng-template>

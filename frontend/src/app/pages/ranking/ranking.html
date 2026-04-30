@@ -1,0 +1,11 @@
+<section class="panel leaderboard">
+  <p class="eyebrow">closed alpha</p>
+  <h1>Leaderboard</h1>
+  <div class="entry" *ngFor="let entry of (leaderboard$ | async); let i = index">
+    <span>#{{ i + 1 }}</span>
+    <strong>{{ entry.github_login }}</strong>
+    <span>{{ entry.wins }}W / {{ entry.losses }}L / {{ entry.ties }}T</span>
+    <span>best {{ entry.best_score }}</span>
+  </div>
+  <a routerLink="/dashboard" class="back-link">Voltar</a>
+</section>

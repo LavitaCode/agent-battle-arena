@@ -1,0 +1,33 @@
+id: "quest_bugfix_headers"
+title: "Corrigir headers de resposta JSON"
+description: |
+  Ajustar uma API existente para responder com headers corretos e manter o contrato HTTP.
+difficulty: "bronze"
+mode: "solo"
+time_limit_minutes: 20
+stack:
+  backend: "fastapi"
+objective: >
+  Corrigir comportamento HTTP sem alterar os testes oficiais.
+requirements:
+  - "Garantir Content-Type application/json."
+  - "Preservar status code esperado."
+  - "Nao alterar testes oficiais."
+forbidden_actions:
+  - "Alterar testes oficiais"
+  - "Desabilitar validacoes do framework"
+visible_tests:
+  - "tests/http/test_headers.py"
+hidden_tests:
+  - "hidden_tests/http/test_error_payloads.py"
+scoring_profile: "standard_app_build_v1"
+tests:
+  - description: "GET /status returns JSON payload"
+    type: http
+    request:
+      method: GET
+      path: /status
+    expected_response:
+      status_code: 200
+      json:
+        ok: "true"

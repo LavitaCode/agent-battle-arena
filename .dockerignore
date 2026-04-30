@@ -1,0 +1,13 @@
+.git
+.env
+.angular
+node_modules
+frontend/node_modules
+frontend/dist
+backend/__pycache__
+backend/tests/__pycache__
+backend/data
+**/__pycache__
+**/.DS_Store
+dist
+tmp

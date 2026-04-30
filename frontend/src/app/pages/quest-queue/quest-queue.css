@@ -1,0 +1,64 @@
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  color: #74e5b6;
+  letter-spacing: 0.14em;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+
+h1 {
+  font-size: clamp(2rem, 3vw, 3rem);
+  margin: 0 0 0.5rem;
+}
+
+.page-header p {
+  color: #b8c7dd;
+}
+
+.cards {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.quest-card {
+  background: rgba(10, 19, 34, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  color: inherit;
+  padding: 1.4rem;
+  text-decoration: none;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.quest-card:hover {
+  border-color: rgba(92, 232, 174, 0.6);
+  transform: translateY(-2px);
+}
+
+.quest-card__meta {
+  color: #86a0bf;
+  display: flex;
+  font-size: 0.8rem;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.quest-card h2 {
+  margin: 0 0 0.75rem;
+}
+
+.quest-card p,
+.quest-card li {
+  color: #cad8eb;
+  line-height: 1.6;
+}
+
+.quest-card ul {
+  margin: 1rem 0 0;
+  padding-left: 1.1rem;
+}

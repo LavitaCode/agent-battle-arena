@@ -1,0 +1,82 @@
+<section *ngIf="bundle$ | async as bundle; else missingRun" class="result-page">
+  <div class="hero panel">
+    <p class="eyebrow">run completed</p>
+    <h1>{{ bundle.run.id }}</h1>
+    <div class="score">
+      <span>score tecnico</span>
+      <strong>{{ bundle.run.summary.technical_score }}</strong>
+    </div>
+    <p>{{ bundle.postMortem.claude_analysis }}</p>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Suites</h2>
+      <div class="suite" *ngFor="let suite of bundle.run.summary.suites">
+        <div>
+          <strong>{{ suite.suite }}</strong>
+          <p>{{ suite.duration_ms || 0 }} ms</p>
+        </div>
+        <div class="suite__score">
+          <span>{{ suite.passed }} passou</span>
+          <span>{{ suite.failed }} falhou</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Replay</h2>
+      <div class="event" *ngFor="let event of bundle.replay">
+        <span>{{ event.type }}</span>
+        <strong>{{ event.message }}</strong>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Post-mortem</h2>
+      <p><strong>Passou:</strong> {{ bundle.postMortem.tests_passed }}</p>
+      <p><strong>Falhou:</strong> {{ bundle.postMortem.tests_failed }}</p>
+      <h3>Forcas</h3>
+      <ul>
+        <li *ngFor="let item of bundle.postMortem.strengths">{{ item }}</li>
+      </ul>
+      <h3 *ngIf="bundle.postMortem.failures.length">Falhas</h3>
+      <ul *ngIf="bundle.postMortem.failures.length">
+        <li *ngFor="let item of bundle.postMortem.failures">{{ item }}</li>
+      </ul>
+      <h3>Sugestoes</h3>
+      <ul>
+        <li *ngFor="let item of bundle.postMortem.suggestions">{{ item }}</li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Ranking local</h2>
+      <div *ngFor="let entry of (ranking$ | async); let i = index" class="rank-entry">
+        <span>#{{ i + 1 }}</span>
+        <strong>{{ entry.agent_profile_id }}</strong>
+        <span>{{ entry.score }}</span>
+      </div>
+    </section>
+
+    <section class="panel" *ngIf="artifacts$ | async as artifacts">
+      <h2>Artefatos</h2>
+      <div class="artifact-list">
+        <span *ngFor="let artifact of artifacts.list">{{ artifact.name }}</span>
+      </div>
+      <h3>Diff starter/workspace</h3>
+      <pre>{{ artifacts.diff.content }}</pre>
+      <h3>Stdout da execucao</h3>
+      <pre>{{ artifacts.stdout.content }}</pre>
+    </section>
+  </div>
+
+  <a routerLink="/quests" class="back-link">Rodar outra quest</a>
+</section>
+
+<ng-template #missingRun>
+  <section class="panel missing">
+    <h1>Run nao encontrada</h1>
+    <a routerLink="/quests" class="back-link">Voltar para quests</a>
+  </section>
+</ng-template>

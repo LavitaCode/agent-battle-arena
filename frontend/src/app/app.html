@@ -1,0 +1,23 @@
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" routerLink="/">
+      <lucide-icon [img]="brandIcon" size="22" strokeWidth="2.4" />
+      <span>Agent Battle Arena</span>
+    </a>
+    <nav class="nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Landing</a>
+      <a routerLink="/login" routerLinkActive="active">Login</a>
+      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+      <a routerLink="/leaderboard" routerLinkActive="active">Leaderboard</a>
+    </nav>
+  </header>
+
+  <main class="content">
+    <div class="system-strip" aria-label="UI system">
+      <span><lucide-icon [img]="agentIcon" size="16" /> PrimeNG UI</span>
+      <span><lucide-icon [img]="trophyIcon" size="16" /> Lucide icons</span>
+      <span><i class="pi pi-bolt"></i> PrimeIcons fallback</span>
+    </div>
+    <router-outlet />
+  </main>
+</div>

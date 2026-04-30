@@ -1,0 +1,15 @@
+<section class="auth-page panel">
+  <p class="eyebrow">closed alpha</p>
+  <h1>Entrar na arena 1v1</h1>
+  <p>Use seu handle do GitHub e um invite valido para acessar o alpha.</p>
+
+  <label for="github-login">GitHub login</label>
+  <input id="github-login" type="text" [formControl]="githubLogin" placeholder="alpha-one" />
+
+  <label for="invite-code">Invite code</label>
+  <input id="invite-code" type="text" [formControl]="inviteCode" />
+
+  <button type="button" (click)="submit()">Entrar</button>
+  <p class="error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
+  <a routerLink="/" class="back-link">Voltar para a landing</a>
+</section>

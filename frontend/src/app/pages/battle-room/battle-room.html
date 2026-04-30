@@ -1,0 +1,70 @@
+<section *ngIf="vm$ | async as vm; else missing" class="battle-room">
+  <ng-container *ngIf="vm.detail as detail; else missing">
+    <div class="hero panel">
+      <p class="eyebrow">alpha battle</p>
+      <h1>{{ detail.battle.id }}</h1>
+      <p>Status atual: <strong>{{ detail.battle.status }}</strong></p>
+      <p>Quest: <strong>{{ detail.battle.quest_id }}</strong></p>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Participantes</h2>
+        <div class="participant" *ngFor="let participant of detail.participants">
+          <strong>{{ participant.seat }}</strong>
+          <span>{{ participant.agent_profile_id }}</span>
+          <span>{{ participant.submission_status }}</span>
+        </div>
+      </section>
+
+      <section class="panel" *ngIf="!isParticipant(detail, vm.session) && detail.participants.length < 2">
+        <h2>Entrar na battle</h2>
+        <select [formControl]="joinProfileId">
+          <option *ngFor="let profile of vm.profiles" [value]="profile.id">{{ profile.name }} · {{ profile.archetype }}</option>
+        </select>
+        <input type="text" [formControl]="overridePath" />
+        <textarea rows="12" [formControl]="overrideContent" placeholder="Cole aqui sua submissao inicial."></textarea>
+        <button type="button" (click)="joinBattle(detail)">Entrar</button>
+      </section>
+
+      <section class="panel" *ngIf="isParticipant(detail, vm.session)">
+        <h2>Minha submissao</h2>
+        <input type="text" [formControl]="overridePath" />
+        <textarea rows="12" [formControl]="overrideContent" placeholder="Atualize seu workspace antes do start."></textarea>
+        <button type="button" (click)="submitWorkspace(detail)">Salvar submissao</button>
+        <button type="button" *ngIf="canStart(detail, vm.session)" (click)="startBattle(detail)">Iniciar battle</button>
+      </section>
+
+      <section class="panel" *ngIf="detail.result">
+        <h2>Resultado</h2>
+        <p><strong>Left:</strong> {{ detail.result.score_left }}</p>
+        <p><strong>Right:</strong> {{ detail.result.score_right }}</p>
+        <p><strong>Regra:</strong> {{ detail.result.tie_break_reason }}</p>
+        <p>{{ detail.result.summary }}</p>
+        <button type="button" (click)="loadReplay(detail)">Carregar replay</button>
+      </section>
+
+      <section class="panel" *ngIf="replayBundle() as replay">
+        <h2>Replay comparativo</h2>
+        <div class="replay-run" *ngFor="let bundle of replay.runs">
+          <h3>{{ bundle.run.agent_profile_id }} · {{ bundle.run.summary.technical_score }}</h3>
+          <p>{{ bundle.post_mortem.claude_analysis }}</p>
+          <div class="event" *ngFor="let event of bundle.replay">
+            <span>{{ event.type }}</span>
+            <strong>{{ event.message }}</strong>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <p class="error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
+    <a routerLink="/dashboard" class="back-link">Voltar para o dashboard</a>
+  </ng-container>
+</section>
+
+<ng-template #missing>
+  <section class="panel missing">
+    <h1>Battle nao encontrada</h1>
+    <a routerLink="/dashboard" class="back-link">Voltar</a>
+  </section>
+</ng-template>

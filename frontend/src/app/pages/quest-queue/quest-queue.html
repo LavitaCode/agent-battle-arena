@@ -1,0 +1,25 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Sprint 3</p>
+      <h1>Fila de quests</h1>
+      <p>Escolha uma quest para iniciar uma run solo com score tecnico e replay.</p>
+    </div>
+  </header>
+
+  <div class="cards" *ngIf="quests$ | async as quests">
+    <a class="quest-card" *ngFor="let quest of quests" [routerLink]="['/quests', quest.id]">
+      <div class="quest-card__meta">
+        <span>{{ quest.difficulty }}</span>
+        <span>{{ quest.mode }}</span>
+      </div>
+      <h2>{{ quest.title }}</h2>
+      <p>{{ quest.description }}</p>
+      <ul>
+        <li>Tempo limite: {{ quest.time_limit_minutes }} min</li>
+        <li>Backend: {{ quest.stack.backend || 'n/a' }}</li>
+        <li>Frontend: {{ quest.stack.frontend || 'n/a' }}</li>
+      </ul>
+    </a>
+  </div>
+</section>

@@ -1,0 +1,39 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    image: agent-battle-arena-backend:local
+    container_name: agent-battle-arena-backend
+    ports:
+      - "8000:8000"
+    environment:
+      CQA_PUBLIC_BASE_URL: "http://localhost:8000"
+      CQA_FRONTEND_ORIGINS: "http://localhost:4200,http://127.0.0.1:4200"
+      CQA_APP_DATA_ROOT: "/app/backend/data"
+      CQA_ALPHA_DB_PATH: "/app/backend/data/public_alpha.sqlite3"
+      CQA_DATABASE_URL: ""
+      CQA_RUN_ARTIFACTS_ROOT: "/tmp/cqa_runs"
+      CQA_SANDBOX_PREFERRED_PROVIDER: "local-process"
+      CQA_ENABLE_MOCK_GITHUB_AUTH: "true"
+    volumes:
+      - ./quests:/app/quests:ro
+      - backend-data:/app/backend/data
+      - run-artifacts:/tmp/cqa_runs
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    image: agent-battle-arena-frontend:local
+    container_name: agent-battle-arena-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-data:
+  run-artifacts:
