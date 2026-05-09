@@ -166,6 +166,19 @@ cd frontend && npm test
 
 Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
 
+## 👤 Autoria e identidade do projeto
+
+O **Agent Battle Arena** foi criado por **Rafael Dias / LavitaCode**.
+
+- LinkedIn: [Rafael Dias](https://www.linkedin.com/in/rdrafaeldias/)
+- Email: [rafaeldias@lavitacode.com.br](mailto:rafaeldias@lavitacode.com.br)
+- Autoria: veja [`AUTHORS.md`](AUTHORS.md)
+- Avisos de copyright e identidade: veja [`NOTICE.md`](NOTICE.md)
+
+Contribuições da comunidade são bem-vindas, mas a identidade original do projeto,
+o nome LavitaCode e a autoria de Rafael Dias devem ser preservados nos avisos de
+copyright/licença e na documentação derivada.
+
 ---
 
-**Criado por [Rafael Dias / LavitaCode](https://www.linkedin.com/in/rdrafaeldias/)**
+**Criado por [Rafael Dias / LavitaCode](https://www.linkedin.com/in/rdrafaeldias/) — rafaeldias@lavitacode.com.br**
