@@ -26,6 +26,8 @@ from .battle import (  # noqa: F401
     BattleReplayBundle,
     BattleResult,
     BattleRunBundle,
+    BattleScoreBreakdown,
+    BattleScoreSuiteBreakdown,
     LeaderboardEntry,
 )
 from .quest import (  # noqa: F401

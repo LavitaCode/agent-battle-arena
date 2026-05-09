@@ -37,6 +37,15 @@ class Settings:
     SANDBOX_PREFERRED_PROVIDER: str = os.getenv("CQA_SANDBOX_PREFERRED_PROVIDER", "docker")
     DOCKER_RUNNER_IMAGE: str = os.getenv("CQA_DOCKER_RUNNER_IMAGE", "cqa-runner-local:latest")
     RUN_ARTIFACTS_ROOT: str = os.getenv("CQA_RUN_ARTIFACTS_ROOT", "/tmp/cqa_runs")
+    RATE_LIMIT_ENABLED: bool = os.getenv("CQA_RATE_LIMIT_ENABLED", "true").lower() == "true"
+    RATE_LIMIT_REQUESTS_PER_MINUTE: int = int(os.getenv("CQA_RATE_LIMIT_REQUESTS_PER_MINUTE", "60"))
+    RATE_LIMIT_AUTH_REQUESTS_PER_MINUTE: int = int(
+        os.getenv("CQA_RATE_LIMIT_AUTH_REQUESTS_PER_MINUTE", "10")
+    )
+    ADMIN_DEBUG_TOKEN: str = os.getenv("CQA_ADMIN_DEBUG_TOKEN", "")
+    MAX_WORKSPACE_FILES: int = int(os.getenv("CQA_MAX_WORKSPACE_FILES", "25"))
+    MAX_WORKSPACE_FILE_BYTES: int = int(os.getenv("CQA_MAX_WORKSPACE_FILE_BYTES", "50000"))
+    MAX_WORKSPACE_TOTAL_BYTES: int = int(os.getenv("CQA_MAX_WORKSPACE_TOTAL_BYTES", "150000"))
     APP_DATA_ROOT: str = os.getenv(
         "CQA_APP_DATA_ROOT",
         os.path.join(os.getcwd(), "backend", "data"),
@@ -51,6 +60,7 @@ class Settings:
     ENABLE_MOCK_GITHUB_AUTH: bool = os.getenv("CQA_ENABLE_MOCK_GITHUB_AUTH", "true").lower() == "true"
     DEFAULT_ALPHA_INVITE_CODE: str = os.getenv("CQA_DEFAULT_ALPHA_INVITE_CODE", "ALPHA-ACCESS")
     SESSION_TTL_HOURS: int = int(os.getenv("CQA_SESSION_TTL_HOURS", "72"))
+    SESSION_COOKIE_SECURE: bool = os.getenv("CQA_SESSION_COOKIE_SECURE", "false").lower() == "true"
     PUBLIC_BASE_URL: str = os.getenv("CQA_PUBLIC_BASE_URL", "http://localhost:8000")
     GITHUB_CLIENT_ID: str = os.getenv("CQA_GITHUB_CLIENT_ID", "")
     GITHUB_CLIENT_SECRET: str = os.getenv("CQA_GITHUB_CLIENT_SECRET", "")

@@ -14,7 +14,8 @@ Hoje o repositório já entrega:
 - runner local reutilizável para submissões de battle;
 - `AgentTemplate`, `AgentProfile`, `Battle`, `BattleResult` e `Leaderboard`;
 - frontend com landing, login, dashboard, battle room e leaderboard;
-- fluxo local de alpha com invite e sessões por cookie.
+- fluxo local de alpha com invite e sessões por cookie;
+- regras públicas, FAQ e checklist de lançamento do closed alpha.
 
 A documentação agora fica separada em dois blocos:
 
@@ -36,7 +37,13 @@ A documentação agora fica separada em dois blocos:
 ## Mapa rápido
 
 - [product-summary.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/product-summary.md): visão de produto, proposta de valor e princípios.
+- [agent-template-contract.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/agent-template-contract.md): contrato completo e preenchível de template de agente, incluindo persona em 3 camadas, modelo, token economy, skills, MCP, handles, regras de decisão, dispatch, artifacts, handoff, worktree, hooks e políticas.
 - [agentbattle.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/agentbattle.md): documento histórico da transição da visão inicial.
+- [league-and-social-mechanics.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/league-and-social-mechanics.md): ligas (Elifoot), votações e chats.
+- [public-alpha-rules.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/public-alpha-rules.md): regras públicas, fair play e privacidade do closed alpha.
+- [public-alpha-faq.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/public-alpha-faq.md): perguntas frequentes para primeiros usuários.
+- [public-alpha-launch-checklist.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/public-alpha-launch-checklist.md): checklist operacional antes de abrir o alpha.
+- [incident-response.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/incident-response.md): runbook de severidade, contenção e encerramento de incidentes do alpha.
 - [planning/dev-onboarding-complete.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/dev-onboarding-complete.md): documento único e mais completo para onboarding de desenvolvedor.
 - [planning/planning-index.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/planning-index.md): planejamento formal do alpha público.
 

@@ -4,6 +4,7 @@ from typing import List, Optional
 from ..models import Run, RunCreate
 from ..core.config import settings
 from ..repositories.base import AgentProfileRepository, QuestRepository, RunRepository
+from .workspace_policy import validate_workspace_files
 
 
 class RunService:
@@ -37,6 +38,10 @@ class RunService:
             raise ValueError(
                 f"Agent profile runtime exceeds the local maximum of {settings.MAX_RUN_TIME_MINUTES} minutes"
             )
+        validate_workspace_files(
+            run_in.workspace_files,
+            profile_max_files=profile.limits.max_files_edited,
+        )
         return self._run_repository.create(run_in)
 
     def save_run(self, run: Run) -> Run:

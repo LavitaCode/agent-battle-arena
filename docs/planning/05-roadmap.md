@@ -20,28 +20,31 @@ Concluída:
 
 ## Fase 2
 
-Em andamento:
+Concluída:
 
 - worker simples concluído
-- dashboard refinado
-- battle room pronta para alpha
-- replay comparativo
-- leaderboard utilizável
+- dashboard refinado concluído
+- battle room pronta para alpha concluída
+- replay comparativo concluído
+- leaderboard utilizável concluído
+- conteúdo e lançamento controlado concluídos
 
 ## Fase 3
 
-Alpha hardening:
+Concluída:
 
-- rate limiting
-- observabilidade
-- admin/debug
-- revisão de segurança
+- rate limiting concluído
+- limites de payload concluídos
+- observabilidade concluída
+- admin/debug concluído
+- revisão de segurança concluída
+- processo de incidente concluído
 
 ## Fase 4
 
-Pós-alpha:
+Em andamento:
 
-- score breakdown
+- score breakdown concluído
 - compare de runs
 - ghost runs
 - biblioteca pública de profiles

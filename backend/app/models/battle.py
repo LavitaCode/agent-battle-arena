@@ -64,6 +64,27 @@ class Battle(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class BattleScoreSuiteBreakdown(BaseModel):
+    suite: str = Field(..., description="Suite identifier")
+    passed: int = Field(0, description="Passed tests in the suite")
+    failed: int = Field(0, description="Failed tests in the suite")
+    duration_ms: Optional[int] = Field(None, description="Suite duration in milliseconds")
+
+
+class BattleScoreBreakdown(BaseModel):
+    participant_id: str = Field(..., description="Participant identifier")
+    seat: str = Field(..., description="Participant seat")
+    technical_score: float = Field(..., description="Technical score for this participant")
+    total_score: float = Field(..., description="Total score for this participant")
+    passed_tests: int = Field(..., description="Total passed tests")
+    failed_tests: int = Field(..., description="Total failed tests")
+    duration_ms: Optional[int] = Field(None, description="Total run duration in milliseconds")
+    suites: List[BattleScoreSuiteBreakdown] = Field(
+        default_factory=list,
+        description="Per-suite score details",
+    )
+
+
 class BattleResult(BaseModel):
     battle_id: str = Field(..., description="Battle identifier")
     winner_participant_id: Optional[str] = Field(None, description="Winner participant identifier")
@@ -71,6 +92,10 @@ class BattleResult(BaseModel):
     score_right: float = Field(..., description="Right seat technical score")
     tie_break_reason: str = Field(..., description="Tie-break explanation")
     summary: str = Field(..., description="Human-readable summary")
+    score_breakdown: List[BattleScoreBreakdown] = Field(
+        default_factory=list,
+        description="Participant-level score explanation",
+    )
 
     model_config = ConfigDict(from_attributes=True)
 

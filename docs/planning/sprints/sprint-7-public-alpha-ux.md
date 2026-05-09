@@ -2,7 +2,7 @@
 
 ## Status
 
-Próxima.
+Concluída.
 
 ## Objetivo
 
@@ -25,3 +25,12 @@ Fechar a experiência de uso para usuários externos do alpha.
 - UI usa PrimeNG para componentes funcionais
 - ícones de identidade e navegação usam Lucide Angular
 - PrimeIcons fica disponível para casos internos/compatibilidade PrimeNG
+
+## Progresso
+
+- Implementado: dashboard operacional com resumo, criação de battle, templates, histórico e leaderboard.
+- Implementado: battle room com status legível, participantes, submissão, start e replay comparativo.
+- Implementado: leaderboard dedicado com PrimeNG card/tag e layout responsivo.
+- Implementado: estados vazios, loading e mensagens de erro nas telas principais do alpha.
+- Implementado: PrimeNG em cards, selects, inputs, textarea, botões, tags, messages e spinner.
+- Implementado: Lucide Angular em sinais de navegação e identidade visual das telas.

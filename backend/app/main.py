@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .api.v1 import router as api_v1_router
 from .core.config import settings
+from .core.metrics import increment_metric
 
 
 def get_application() -> FastAPI:
@@ -23,6 +24,12 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    @application.middleware("http")
+    async def metrics_middleware(request, call_next):
+        increment_metric("requests_total")
+        return await call_next(request)
+
     application.include_router(api_v1_router, prefix=settings.API_V1_PREFIX)
     return application
 

@@ -1,0 +1,25 @@
+{
+  "id": "template-senior-backend",
+  "name": "Senior Backend Architect",
+  "archetype": "architect",
+  "description": "Focado em padrões de projeto, segurança e performance em Node.js/Go.",
+  "recommended_for": "Quests de infraestrutura, auth e sistemas distribuídos.",
+  "locked_fields": ["base_model"],
+  "default_profile_payload": {
+    "planning_style": "Chain-of-Thought with detailed pseudo-code",
+    "preferred_stack": ["Fastify", "TypeScript", "PostgreSQL"],
+    "engineering_principles": [
+      "Dependency Injection",
+      "Repository Pattern",
+      "Graceful Shutdown"
+    ]
+  },
+  "editable_sections": [
+    "prompt_instructions",
+    "unit_test_strategy"
+  ],
+  "tips": [
+    "Use este template para quests que exigem rigor arquitetural.",
+    "Evite-o para scripts rápidos de data manipulation."
+  ]
+}

@@ -20,6 +20,8 @@ from ..models import (
     BattleParticipantSubmission,
     BattleResult,
     BattleRunBundle,
+    BattleScoreBreakdown,
+    BattleScoreSuiteBreakdown,
     InviteValidationResponse,
     Quest,
     ReplayEvent,
@@ -33,10 +35,12 @@ from ..repositories.in_memory import (
     InMemoryReplayEventRepository,
 )
 from ..sandbox.runner import SandboxRunner
+from ..core.metrics import increment_metric
 from .alpha_store import AlphaStore
 from .battle_worker import InProcessBattleWorker
 from .execution_service import ExecutionService
 from .quest_service import QuestService
+from .workspace_policy import validate_workspace_files
 
 
 class PublicAlphaService:
@@ -153,7 +157,11 @@ class PublicAlphaService:
 
     def create_battle(self, user: User, battle_in: BattleCreate) -> BattleDetail:
         self._assert_quest_exists(battle_in.quest_id)
-        self._assert_profile_ownership(user.id, battle_in.agent_profile_id)
+        profile = self._assert_profile_ownership(user.id, battle_in.agent_profile_id)
+        validate_workspace_files(
+            battle_in.workspace_files,
+            profile_max_files=profile.limits.max_files_edited,
+        )
         battle = self._store.create_battle(user.id, battle_in.quest_id)
         self._store.create_or_replace_participant(
             battle.id,
@@ -165,7 +173,11 @@ class PublicAlphaService:
         return self.get_battle_detail(battle.id)
 
     def join_battle(self, battle_id: str, user: User, battle_in: BattleJoin) -> BattleDetail:
-        self._assert_profile_ownership(user.id, battle_in.agent_profile_id)
+        profile = self._assert_profile_ownership(user.id, battle_in.agent_profile_id)
+        validate_workspace_files(
+            battle_in.workspace_files,
+            profile_max_files=profile.limits.max_files_edited,
+        )
         battle = self._store.get_battle(battle_id)
         if battle is None:
             raise ValueError("Battle not found")
@@ -188,6 +200,16 @@ class PublicAlphaService:
     def submit_for_battle(
         self, battle_id: str, user: User, submission: BattleParticipantSubmission
     ) -> BattleDetail:
+        participant = self._store.get_participant_by_user(battle_id, user.id)
+        if participant is None:
+            raise ValueError("Participant not found")
+        profile = self._store.get_profile(participant.agent_profile_id)
+        if profile is None:
+            raise ValueError("Profile not found")
+        validate_workspace_files(
+            submission.workspace_files,
+            profile_max_files=profile.limits.max_files_edited,
+        )
         self._store.update_participant_submission(battle_id, user.id, submission.workspace_files)
         participants = self._store.get_participants(battle_id)
         if len(participants) == 2 and all(item.submission_status == "ready" for item in participants):
@@ -206,7 +228,11 @@ class PublicAlphaService:
             raise ValueError("Both participants must submit before starting")
         self._store.update_battle_status(battle_id, "queued")
         self._battle_worker.enqueue(battle_id)
+        increment_metric("battles_queued_total")
         return self.get_battle_detail(battle_id)
+
+    def pending_battle_jobs(self) -> int:
+        return self._battle_worker.pending_count()
 
     def get_battle_result(self, battle_id: str) -> BattleResult:
         result = self._store.get_battle_result(battle_id)
@@ -331,8 +357,10 @@ class PublicAlphaService:
             result = self._build_result(battle_id, bundles)
             self._store.save_battle_result(result)
             self._store.update_battle_status(battle_id, "completed")
+            increment_metric("battles_completed_total")
         except Exception:
             self._store.update_battle_status(battle_id, "failed")
+            increment_metric("battles_failed_total")
             raise
 
     def _build_result(self, battle_id: str, bundles: list[BattleRunBundle]) -> BattleResult:
@@ -381,6 +409,31 @@ class PublicAlphaService:
             score_right=right_score,
             tie_break_reason=reason,
             summary=summary,
+            score_breakdown=[
+                self._build_score_breakdown(left),
+                self._build_score_breakdown(right),
+            ],
+        )
+
+    def _build_score_breakdown(self, bundle: BattleRunBundle) -> BattleScoreBreakdown:
+        summary = bundle.run.summary
+        return BattleScoreBreakdown(
+            participant_id=bundle.participant_id,
+            seat=bundle.run.id.rsplit("-", 1)[-1],
+            technical_score=summary.technical_score,
+            total_score=summary.total_score,
+            passed_tests=sum(item.passed for item in summary.suites),
+            failed_tests=sum(item.failed for item in summary.suites),
+            duration_ms=summary.duration_ms,
+            suites=[
+                BattleScoreSuiteBreakdown(
+                    suite=item.suite,
+                    passed=item.passed,
+                    failed=item.failed,
+                    duration_ms=item.duration_ms,
+                )
+                for item in summary.suites
+            ],
         )
 
     def _assert_quest_exists(self, quest_id: str) -> Quest:
@@ -389,7 +442,8 @@ class PublicAlphaService:
             raise ValueError("Quest not found")
         return quest
 
-    def _assert_profile_ownership(self, user_id: str, profile_id: str) -> None:
-        owner = self._store.get_profile_owner(profile_id)
-        if owner != user_id:
+    def _assert_profile_ownership(self, user_id: str, profile_id: str) -> AgentProfile:
+        profile = self._store.get_profile(profile_id)
+        if profile is None or profile.owner_user_id != user_id:
             raise ValueError("Profile does not belong to the authenticated user")
+        return profile

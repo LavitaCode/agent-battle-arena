@@ -13,6 +13,7 @@ from typing import List
 
 from ..core.config import settings
 from ..models import Quest, Run
+from ..services.workspace_policy import validate_workspace_files
 
 
 @dataclass
@@ -53,6 +54,23 @@ class DockerSandboxProvider(SandboxProvider):
     """Run quest evaluation inside a local Docker container."""
 
     name = "docker"
+    hardening_flags = [
+        "--network",
+        "none",
+        "--cpus",
+        "1.0",
+        "--memory",
+        "256m",
+        "--pids-limit",
+        "128",
+        "--read-only",
+        "--security-opt",
+        "no-new-privileges",
+        "--cap-drop",
+        "ALL",
+        "--tmpfs",
+        "/tmp:rw,noexec,nosuid,size=64m",
+    ]
 
     def is_available(self) -> bool:
         try:
@@ -108,25 +126,7 @@ class DockerSandboxProvider(SandboxProvider):
             "print(json.dumps(payload))"
         )
         completed = subprocess.run(
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--network",
-                "none",
-                "--cpus",
-                "1.0",
-                "--memory",
-                "256m",
-                "--pids-limit",
-                "128",
-                "-v",
-                f"{temp_path}:/sandbox",
-                settings.DOCKER_RUNNER_IMAGE,
-                "python3",
-                "-c",
-                script,
-            ],
+            self.build_docker_command(str(temp_path), script, max(5, quest.time_limit_minutes * 2)),
             check=True,
             capture_output=True,
             text=True,
@@ -181,6 +181,27 @@ class DockerSandboxProvider(SandboxProvider):
             app_dir = quest_dir / "app"
             if app_dir.exists():
                 shutil.copytree(app_dir, workspace / "app")
+
+    def build_docker_command(
+        self,
+        temp_path: str,
+        script: str,
+        timeout_seconds: int,
+    ) -> List[str]:
+        """Return the hardened docker command used for sandbox execution."""
+        del timeout_seconds
+        return [
+            "docker",
+            "run",
+            "--rm",
+            *self.hardening_flags,
+            "-v",
+            f"{temp_path}:/sandbox:rw",
+            settings.DOCKER_RUNNER_IMAGE,
+            "python3",
+            "-c",
+            script,
+        ]
 
 
 class LocalProcessSandboxProvider(SandboxProvider):
@@ -358,11 +379,10 @@ print(json.dumps(payload))
                 shutil.copytree(app_dir, workspace / "app")
 
     def _apply_workspace_files(self, workspace: Path, workspace_files: dict[str, str]) -> List[str]:
+        validate_workspace_files(workspace_files)
         changed_files: List[str] = []
         for relative_path, content in workspace_files.items():
             relative = Path(relative_path)
-            if relative.is_absolute() or ".." in relative.parts:
-                continue
             target = workspace / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(content, encoding="utf-8")

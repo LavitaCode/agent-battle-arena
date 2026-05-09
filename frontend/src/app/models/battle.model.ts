@@ -22,6 +22,25 @@ export interface BattleResult {
   score_right: number;
   tie_break_reason: string;
   summary: string;
+  score_breakdown: BattleScoreBreakdown[];
+}
+
+export interface BattleScoreBreakdown {
+  participant_id: string;
+  seat: 'left' | 'right';
+  technical_score: number;
+  total_score: number;
+  passed_tests: number;
+  failed_tests: number;
+  duration_ms: number | null;
+  suites: BattleScoreSuiteBreakdown[];
+}
+
+export interface BattleScoreSuiteBreakdown {
+  suite: string;
+  passed: number;
+  failed: number;
+  duration_ms: number | null;
 }
 
 export interface Battle {

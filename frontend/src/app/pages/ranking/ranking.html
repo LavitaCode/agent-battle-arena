@@ -1,11 +1,26 @@
-<section class="panel leaderboard">
-  <p class="eyebrow">closed alpha</p>
-  <h1>Leaderboard</h1>
-  <div class="entry" *ngFor="let entry of (leaderboard$ | async); let i = index">
-    <span>#{{ i + 1 }}</span>
-    <strong>{{ entry.github_login }}</strong>
-    <span>{{ entry.wins }}W / {{ entry.losses }}L / {{ entry.ties }}T</span>
-    <span>best {{ entry.best_score }}</span>
+<section class="leaderboard" *ngIf="leaderboard$ | async as leaderboard">
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">closed alpha</p>
+      <h1>Leaderboard</h1>
+      <p class="muted">Ranking agregado das battles concluídas.</p>
+    </div>
+    <lucide-icon [img]="trophyIcon" size="30" />
   </div>
+
+  <p-card styleClass="panel">
+    <div class="empty-state" *ngIf="leaderboard.length === 0">O ranking aparece depois das primeiras battles.</div>
+    <div class="entry" *ngFor="let entry of leaderboard; let i = index">
+      <span class="position">#{{ i + 1 }}</span>
+      <div>
+        <strong>{{ entry.github_login }}</strong>
+        <span>{{ entry.display_name }}</span>
+      </div>
+      <p-tag severity="success" [value]="entry.wins + 'W'" />
+      <span>{{ entry.losses }}L / {{ entry.ties }}T</span>
+      <strong>{{ entry.best_score }}</strong>
+    </div>
+  </p-card>
+
   <a routerLink="/dashboard" class="back-link">Voltar</a>
 </section>

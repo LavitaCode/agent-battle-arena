@@ -1,10 +1,26 @@
-name: Hello World API
+id: "quest_hello_world"
+title: "Hello World API"
 description: |
   Construir uma API REST simples que retorna "Hello, World!" em JSON.
+difficulty: "bronze"
+mode: "solo"
+time_limit_minutes: 20
+stack:
+  backend: "fastapi"
+objective: >
+  Implementar o primeiro contrato HTTP da arena com uma API FastAPI mínima.
 requirements:
   - 'Expor o endpoint GET `/hello` que responde com `{"message": "Hello, World!"}`.'
   - Utilizar o framework FastAPI.
   - Escrever um arquivo README com instruções de execução e teste.
+forbidden_actions:
+  - "Alterar testes oficiais"
+  - "Remover FastAPI do starter"
+visible_tests:
+  - "tests/test_hello.py"
+hidden_tests:
+  - "hidden_tests/test_hidden_contract.py"
+scoring_profile: "standard_app_build_v1"
 tests:
   - description: "GET /hello should return status 200"
     type: http

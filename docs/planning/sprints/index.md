@@ -15,3 +15,4 @@ alpha público e o hardening pós-lançamento.
 - [sprint-7-public-alpha-ux.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/sprints/sprint-7-public-alpha-ux.md)
 - [sprint-8-content-and-launch.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/sprints/sprint-8-content-and-launch.md)
 - [sprint-9-post-launch-hardening.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/sprints/sprint-9-post-launch-hardening.md)
+- [sprint-10-score-breakdown.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/sprints/sprint-10-score-breakdown.md)

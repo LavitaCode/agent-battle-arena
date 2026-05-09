@@ -21,6 +21,7 @@ from backend.app.core.dependencies import (
     get_run_repository,
     get_sandbox_runner,
 )
+from backend.app.core.rate_limit import reset_rate_limiter
 from backend.app.main import app
 from backend.app.models import BattleCreate, BattleJoin
 from backend.app.services.alpha_store import AlphaStore
@@ -44,6 +45,7 @@ class PublicAlphaFlowTestCase(unittest.TestCase):
         get_ranking_repository.cache_clear()
         get_public_alpha_service.cache_clear()
         get_alpha_store.cache_clear()
+        reset_rate_limiter()
         if os.path.exists(settings.ALPHA_DB_PATH):
             os.remove(settings.ALPHA_DB_PATH)
 
@@ -298,6 +300,18 @@ class PublicAlphaFlowTestCase(unittest.TestCase):
             {"higher_technical_score", "more_passed_tests", "lower_duration_ms", "explicit_tie"},
         )
         self.assertGreaterEqual(result.json()["score_left"], result.json()["score_right"])
+        breakdown = result.json()["score_breakdown"]
+        self.assertEqual(len(breakdown), 2)
+        self.assertEqual({item["seat"] for item in breakdown}, {"left", "right"})
+        for item in breakdown:
+            with self.subTest(seat=item["seat"]):
+                self.assertIn("participant_id", item)
+                self.assertIn("technical_score", item)
+                self.assertIn("total_score", item)
+                self.assertIn("duration_ms", item)
+                self.assertGreaterEqual(item["passed_tests"], 0)
+                self.assertGreaterEqual(item["failed_tests"], 0)
+                self.assertEqual({suite["suite"] for suite in item["suites"]}, {"visible", "hidden"})
 
         replay = self.client.get(f"/api/v1/battles/{battle_id}/replay")
         self.assertEqual(replay.status_code, 200)

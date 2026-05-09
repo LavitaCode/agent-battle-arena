@@ -4,6 +4,7 @@ from typing import Optional
 
 from ....core.config import settings
 from ....core.dependencies import get_public_alpha_service
+from ....core.rate_limit import enforce_rate_limit
 from ....models import (
     AuthStartRequest,
     AuthStartResponse,
@@ -19,9 +20,11 @@ router = APIRouter()
 @router.post("/github/start", response_model=AuthStartResponse, summary="Iniciar login do alpha")
 def start_github_auth(
     payload: AuthStartRequest,
+    request: Request,
     service: PublicAlphaService = Depends(get_public_alpha_service),
 ):
     """Start GitHub OAuth or the local mock auth flow."""
+    enforce_rate_limit(request, "auth")
     try:
         state, authorization_url = service.start_auth(payload.github_login, payload.invite_code)
     except ValueError as exc:
@@ -32,12 +35,14 @@ def start_github_auth(
 @router.get("/github/callback", response_model=SessionUserResponse, summary="Finalizar login do alpha")
 def github_callback(
     state: str,
+    request: Request,
     response: Response,
     github_login: Optional[str] = None,
     code: Optional[str] = None,
     service: PublicAlphaService = Depends(get_public_alpha_service),
 ):
     """Complete GitHub OAuth or the local mock callback and create a session cookie."""
+    enforce_rate_limit(request, "auth")
     try:
         user, token = service.finish_auth(state, github_login=github_login, code=code)
     except ValueError as exc:
@@ -47,7 +52,7 @@ def github_callback(
         value=token,
         httponly=True,
         samesite="lax",
-        secure=False,
+        secure=settings.SESSION_COOKIE_SECURE,
         max_age=settings.SESSION_TTL_HOURS * 3600,
     )
     return SessionUserResponse(authenticated=True, user=user)
@@ -67,7 +72,9 @@ def get_me(
 def validate_invite(
     code: str,
     github_login: str,
+    request: Request,
     service: PublicAlphaService = Depends(get_public_alpha_service),
 ):
     """Validate whether the invite can be used by a GitHub login."""
+    enforce_rate_limit(request, "auth")
     return service.validate_invite(code, github_login)

@@ -1,57 +1,134 @@
-<section *ngIf="vm$ | async as vm" class="dashboard">
-  <div class="hero panel">
-    <p class="eyebrow">public alpha</p>
-    <h1>Batalhas 1v1 de agentes com quests reais</h1>
-    <p *ngIf="vm.user">Conectado como <strong>{{ vm.user.github_login }}</strong>.</p>
+<section *ngIf="vm$ | async as vm; else loading" class="dashboard">
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">public alpha</p>
+      <h1>Batalhas 1v1 de agentes</h1>
+      <p *ngIf="vm.user" class="muted">Conectado como <strong>{{ vm.user.github_login }}</strong></p>
+    </div>
+    <div class="summary-grid" aria-label="Resumo do alpha">
+      <div class="summary-item">
+        <lucide-icon [img]="questIcon" size="18" />
+        <strong>{{ vm.quests.length }}</strong>
+        <span>quests</span>
+      </div>
+      <div class="summary-item">
+        <lucide-icon [img]="templateIcon" size="18" />
+        <strong>{{ vm.profiles.length }}</strong>
+        <span>profiles</span>
+      </div>
+      <div class="summary-item">
+        <lucide-icon [img]="battleIcon" size="18" />
+        <strong>{{ vm.battles.length }}</strong>
+        <span>battles</span>
+      </div>
+    </div>
   </div>
 
-  <div class="grid">
-    <section class="panel">
-      <h2>Criar battle</h2>
-      <label for="quest">Quest</label>
-      <select id="quest" [formControl]="selectedQuestId">
-        <option *ngFor="let quest of vm.quests" [value]="quest.id">{{ quest.title }}</option>
-      </select>
+  <div class="dashboard-grid">
+    <p-card styleClass="panel create-panel">
+      <ng-template pTemplate="header">
+        <div class="panel-heading">
+          <lucide-icon [img]="createIcon" size="19" />
+          <h2>Criar battle</h2>
+        </div>
+      </ng-template>
 
-      <label for="profile">Profile</label>
-      <select id="profile" [formControl]="selectedProfileId">
-        <option *ngFor="let profile of vm.profiles" [value]="profile.id">{{ profile.name }} · {{ profile.archetype }}</option>
-      </select>
+      <div class="form-grid">
+        <label for="quest">Quest</label>
+        <p-select
+          inputId="quest"
+          [options]="vm.questOptions"
+          optionLabel="label"
+          optionValue="value"
+          [formControl]="selectedQuestId"
+          placeholder="Selecione uma quest"
+        />
 
-      <label for="override-path">Arquivo inicial</label>
-      <input id="override-path" type="text" [formControl]="overridePath" />
-      <label for="override-content">Submissao inicial</label>
-      <textarea id="override-content" rows="12" [formControl]="overrideContent"></textarea>
-      <button type="button" (click)="createBattle()">Criar battle</button>
-      <p class="error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
-    </section>
+        <label for="profile">Profile</label>
+        <p-select
+          inputId="profile"
+          [options]="vm.profileOptions"
+          optionLabel="label"
+          optionValue="value"
+          [formControl]="selectedProfileId"
+          placeholder="Selecione um profile"
+        />
 
-    <section class="panel">
-      <h2>Agent templates oficiais</h2>
-      <div class="template" *ngFor="let template of vm.templates">
-        <strong>{{ template.name }}</strong>
-        <p>{{ template.description }}</p>
-        <span>{{ template.recommended_for.join(' · ') }}</span>
+        <label for="override-path">Arquivo inicial</label>
+        <input id="override-path" pInputText type="text" [formControl]="overridePath" />
+
+        <label for="override-content">Submissão inicial</label>
+        <textarea id="override-content" pTextarea rows="10" [formControl]="overrideContent"></textarea>
       </div>
-    </section>
 
-    <section class="panel">
-      <h2>Minhas battles</h2>
+      <p-button
+        label="Criar battle"
+        icon="pi pi-plus"
+        [disabled]="!selectedQuestId.value || !selectedProfileId.value"
+        (onClick)="createBattle()"
+      />
+      <p-message *ngIf="errorMessage()" severity="error" [text]="errorMessage()" />
+    </p-card>
+
+    <p-card styleClass="panel">
+      <ng-template pTemplate="header">
+        <div class="panel-heading">
+          <lucide-icon [img]="templateIcon" size="19" />
+          <h2>Templates oficiais</h2>
+        </div>
+      </ng-template>
+
+      <div class="empty-state" *ngIf="vm.templates.length === 0">Nenhum template disponível.</div>
+      <div class="template-list">
+        <article class="template" *ngFor="let template of vm.templates">
+          <div>
+            <strong>{{ template.name }}</strong>
+            <p>{{ template.description }}</p>
+          </div>
+          <span>{{ template.recommended_for.join(' · ') }}</span>
+        </article>
+      </div>
+    </p-card>
+
+    <p-card styleClass="panel">
+      <ng-template pTemplate="header">
+        <div class="panel-heading">
+          <lucide-icon [img]="battleIcon" size="19" />
+          <h2>Minhas battles</h2>
+        </div>
+      </ng-template>
+
+      <div class="empty-state" *ngIf="vm.battles.length === 0">Crie uma battle para iniciar o primeiro confronto.</div>
       <a class="battle-card" *ngFor="let battle of vm.battles" [routerLink]="['/battles', battle.battle.id]">
-        <strong>{{ battle.battle.id }}</strong>
-        <span>{{ battle.battle.quest_id }}</span>
-        <span>{{ battle.battle.status }}</span>
+        <div>
+          <strong>{{ battle.battle.id }}</strong>
+          <span>{{ battle.battle.quest_id }}</span>
+        </div>
+        <p-tag [severity]="statusSeverity(battle.battle.status)" [value]="statusLabel(battle.battle.status)" />
       </a>
-    </section>
+    </p-card>
 
-    <section class="panel">
-      <h2>Leaderboard</h2>
+    <p-card styleClass="panel leaderboard-panel">
+      <ng-template pTemplate="header">
+        <div class="panel-heading">
+          <lucide-icon [img]="leaderboardIcon" size="19" />
+          <h2>Leaderboard</h2>
+        </div>
+      </ng-template>
+
+      <div class="empty-state" *ngIf="vm.leaderboard.length === 0">O ranking aparece depois das primeiras battles.</div>
       <div class="rank-entry" *ngFor="let entry of vm.leaderboard; let i = index">
         <span>#{{ i + 1 }}</span>
         <strong>{{ entry.github_login }}</strong>
         <span>{{ entry.wins }}W / {{ entry.losses }}L / {{ entry.ties }}T</span>
       </div>
       <a routerLink="/leaderboard" class="back-link">Abrir leaderboard completo</a>
-    </section>
+    </p-card>
   </div>
 </section>
+
+<ng-template #loading>
+  <section class="loading-state">
+    <p-progress-spinner ariaLabel="Carregando dashboard" />
+  </section>
+</ng-template>

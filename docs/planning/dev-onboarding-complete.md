@@ -335,20 +335,22 @@ Concluída:
 
 ### Fase 2
 
-Em andamento:
+Concluída:
 
 - worker simples concluído
-- dashboard refinado
-- battle room pronta
-- replay comparativo melhor
-- leaderboard utilizável
+- dashboard refinado concluído
+- battle room pronta concluída
+- replay comparativo melhor concluído
+- leaderboard utilizável concluído
+- conteúdo e lançamento controlado concluídos
 
 ### Fase 3
 
-Alpha hardening:
+Em andamento:
 
-- rate limiting
-- observabilidade
+- rate limiting concluído
+- limites de payload concluídos
+- observabilidade concluída
 - admin/debug
 - revisão de segurança
 

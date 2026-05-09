@@ -2,6 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { ClipboardList, LucideAngularModule, Plus, Swords, Trophy, Users } from 'lucide-angular';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { TextareaModule } from 'primeng/textarea';
 import { catchError, combineLatest, map, of } from 'rxjs';
 
 import { AgentProfile } from '../../models/agent-profile.model';
@@ -18,7 +27,20 @@ import { TemplateService } from '../../services/template/template';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    LucideAngularModule,
+    ButtonModule,
+    CardModule,
+    InputTextModule,
+    MessageModule,
+    ProgressSpinnerModule,
+    SelectModule,
+    TagModule,
+    TextareaModule,
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -36,6 +58,11 @@ export class Dashboard {
   readonly overridePath = new FormControl('app/main.py', { nonNullable: true });
   readonly overrideContent = new FormControl('', { nonNullable: true });
   readonly errorMessage = signal('');
+  readonly battleIcon = Swords;
+  readonly createIcon = Plus;
+  readonly templateIcon = Users;
+  readonly leaderboardIcon = Trophy;
+  readonly questIcon = ClipboardList;
 
   readonly vm$ = combineLatest([
     this.authService.me().pipe(catchError(() => of({ authenticated: false, user: null }))),
@@ -60,6 +87,14 @@ export class Dashboard {
         templates,
         profiles,
         quests,
+        questOptions: quests.map((quest) => ({
+          label: `${quest.title} · ${quest.difficulty}`,
+          value: quest.id,
+        })),
+        profileOptions: profiles.map((profile) => ({
+          label: `${profile.name} · ${profile.archetype}`,
+          value: profile.id,
+        })),
         battles,
         leaderboard,
       };
@@ -82,5 +117,33 @@ export class Dashboard {
         next: (detail) => this.router.navigate(['/battles', detail.battle.id]),
         error: () => this.errorMessage.set('Nao foi possivel criar a battle agora.'),
       });
+  }
+
+  statusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+    if (status === 'completed') {
+      return 'success';
+    }
+    if (status === 'failed') {
+      return 'danger';
+    }
+    if (status === 'queued' || status === 'running') {
+      return 'warn';
+    }
+    if (status === 'ready') {
+      return 'info';
+    }
+    return 'secondary';
+  }
+
+  statusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      waiting_for_opponent: 'aguardando oponente',
+      ready: 'pronta',
+      queued: 'na fila',
+      running: 'executando',
+      completed: 'concluída',
+      failed: 'falhou',
+    };
+    return labels[status] ?? status;
   }
 }

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from ....core.config import settings
 from ....core.dependencies import get_public_alpha_service
+from ....core.rate_limit import enforce_rate_limit
 from ....models import (
     BattleCreate,
     BattleDetail,
@@ -42,6 +43,7 @@ def create_battle(
     service: PublicAlphaService = Depends(get_public_alpha_service),
 ):
     """Create a new async 1v1 battle."""
+    enforce_rate_limit(request, "battle-write")
     user = _require_user(request, service)
     try:
         return service.create_battle(user, battle_in)
@@ -69,6 +71,7 @@ def join_battle(
     service: PublicAlphaService = Depends(get_public_alpha_service),
 ):
     """Join an existing battle with a selected agent profile."""
+    enforce_rate_limit(request, "battle-write")
     user = _require_user(request, service)
     try:
         return service.join_battle(battle_id, user, battle_in)
@@ -84,6 +87,7 @@ def submit_battle(
     service: PublicAlphaService = Depends(get_public_alpha_service),
 ):
     """Submit or replace the workspace payload for the authenticated participant."""
+    enforce_rate_limit(request, "battle-write")
     user = _require_user(request, service)
     try:
         return service.submit_for_battle(battle_id, user, submission)
@@ -98,6 +102,7 @@ def start_battle(
     service: PublicAlphaService = Depends(get_public_alpha_service),
 ):
     """Queue a battle for execution and return immediately for polling."""
+    enforce_rate_limit(request, "battle-write")
     user = _require_user(request, service)
     try:
         return service.start_battle(battle_id, user)

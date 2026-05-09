@@ -1,8 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { catchError, combineLatest, map, of, startWith, switchMap, timer } from 'rxjs';
+import { ClipboardCheck, LucideAngularModule, RotateCw, Swords, Trophy, Users } from 'lucide-angular';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { TextareaModule } from 'primeng/textarea';
+import { catchError, combineLatest, map, of, switchMap, timer } from 'rxjs';
 
 import { AgentProfile } from '../../models/agent-profile.model';
 import { AuthSession } from '../../models/auth-session.model';
@@ -13,7 +22,20 @@ import { BattleService } from '../../services/battle/battle';
 
 @Component({
   selector: 'app-battle-room',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    LucideAngularModule,
+    ButtonModule,
+    CardModule,
+    InputTextModule,
+    MessageModule,
+    ProgressSpinnerModule,
+    SelectModule,
+    TagModule,
+    TextareaModule,
+  ],
   templateUrl: './battle-room.html',
   styleUrl: './battle-room.css',
 })
@@ -28,6 +50,11 @@ export class BattleRoom {
   readonly overrideContent = new FormControl('', { nonNullable: true });
   readonly errorMessage = signal('');
   readonly replayBundle = signal<BattleReplayBundle | null>(null);
+  readonly battleIcon = Swords;
+  readonly participantIcon = Users;
+  readonly submitIcon = ClipboardCheck;
+  readonly replayIcon = RotateCw;
+  readonly resultIcon = Trophy;
 
   readonly me$ = this.authService.me().pipe(catchError(() => of({ authenticated: false, user: null } as AuthSession)));
   readonly myProfiles$ = this.profileService.listMine().pipe(catchError(() => of([] as AgentProfile[])));
@@ -41,10 +68,21 @@ export class BattleRoom {
     )
   );
   readonly vm$ = combineLatest([this.me$, this.myProfiles$, this.battle$]).pipe(
-    map(([session, profiles, detail]) => ({ session, profiles, detail }))
+    map(([session, profiles, detail]) => {
+      if (!this.joinProfileId.value && profiles.length > 0) {
+        this.joinProfileId.setValue(profiles[0].id);
+      }
+      return {
+        session,
+        profiles,
+        profileOptions: profiles.map((profile) => ({
+          label: `${profile.name} · ${profile.archetype}`,
+          value: profile.id,
+        })),
+        detail,
+      };
+    })
   );
-
-  isCreator = computed(() => false);
 
   joinBattle(detail: BattleDetail) {
     this.errorMessage.set('');
@@ -89,5 +127,42 @@ export class BattleRoom {
 
   canStart(detail: BattleDetail, session: AuthSession): boolean {
     return detail.battle.created_by_user_id === session.user?.id && detail.battle.status === 'ready';
+  }
+
+  statusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+    if (status === 'completed') {
+      return 'success';
+    }
+    if (status === 'failed') {
+      return 'danger';
+    }
+    if (status === 'queued' || status === 'running') {
+      return 'warn';
+    }
+    if (status === 'ready') {
+      return 'info';
+    }
+    return 'secondary';
+  }
+
+  statusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      waiting_for_opponent: 'aguardando oponente',
+      ready: 'pronta',
+      queued: 'na fila',
+      running: 'executando',
+      completed: 'concluída',
+      failed: 'falhou',
+    };
+    return labels[status] ?? status;
+  }
+
+  participantLabel(status: string): string {
+    const labels: Record<string, string> = {
+      joined: 'entrou',
+      ready: 'submissão pronta',
+      completed: 'run concluída',
+    };
+    return labels[status] ?? status;
   }
 }
