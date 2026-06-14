@@ -1,0 +1,39 @@
+id: "quest_retry_backoff"
+title: "Implementar retry com backoff exponencial"
+description: |
+  Um cliente HTTP falha imediatamente quando o serviço externo retorna erro.
+  Implemente retry com backoff exponencial: tentativas com espera dobrada a
+  cada falha (1s, 2s, 4s…), limite de 3 tentativas, sem bibliotecas externas.
+difficulty: "silver"
+mode: "solo"
+time_limit_minutes: 25
+stack:
+  backend: "fastapi"
+objective: >
+  Adicionar resiliência ao cliente HTTP com retry exponencial, tornando o
+  endpoint tolerante a falhas transitórias sem alterar o contrato da resposta.
+requirements:
+  - "Máximo de 3 tentativas por requisição."
+  - "Espera entre tentativas: 0.1s, 0.2s, 0.4s (escalonados para testes rápidos)."
+  - "Após esgotar tentativas, retornar HTTP 503."
+  - "Usar apenas stdlib Python (sem tenacity, httpx retry, etc.)."
+  - "Não alterar os testes oficiais."
+forbidden_actions:
+  - "Alterar testes oficiais"
+  - "Usar bibliotecas de retry externas (tenacity, urllib3 Retry, etc.)"
+visible_tests:
+  - "tests/test_retry.py"
+hidden_tests:
+  - "hidden_tests/test_retry_hidden.py"
+scoring_profile: "standard_app_build_v1"
+cognitive_layers:
+  - "C3"
+  - "C4"
+tests:
+  - description: "GET /fetch returns 200 when upstream is healthy"
+    type: http
+    request:
+      method: GET
+      path: /fetch
+    expected_response:
+      status_code: 200

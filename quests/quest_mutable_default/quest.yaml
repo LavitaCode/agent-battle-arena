@@ -1,0 +1,37 @@
+id: "quest_mutable_default"
+title: "Corrigir argumento mutável padrão"
+description: |
+  Uma API de carrinho de compras acumula itens entre requisições por causa de
+  um argumento mutável padrão — bug clássico de Python. Corrija o comportamento
+  sem alterar o contrato do endpoint.
+difficulty: "bronze"
+mode: "solo"
+time_limit_minutes: 20
+stack:
+  backend: "fastapi"
+objective: >
+  Identificar e corrigir o uso de lista mutável como valor padrão de argumento,
+  garantindo que cada requisição receba um carrinho vazio e independente.
+requirements:
+  - "Corrigir o bug de argumento mutável padrão em Python."
+  - "POST /cart/add deve retornar apenas os itens da requisição atual."
+  - "Não alterar a assinatura do endpoint nem os testes oficiais."
+forbidden_actions:
+  - "Alterar testes oficiais"
+  - "Usar variável global para o carrinho"
+visible_tests:
+  - "tests/test_cart.py"
+hidden_tests:
+  - "hidden_tests/test_cart_hidden.py"
+scoring_profile: "standard_app_build_v1"
+cognitive_layers:
+  - "C2"
+  - "C3"
+tests:
+  - description: "POST /cart/add returns the submitted items"
+    type: http
+    request:
+      method: POST
+      path: /cart/add
+    expected_response:
+      status_code: 200

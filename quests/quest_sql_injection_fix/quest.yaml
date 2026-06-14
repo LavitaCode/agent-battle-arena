@@ -1,0 +1,40 @@
+id: "quest_sql_injection_fix"
+title: "Corrigir SQL Injection"
+description: |
+  Uma API de busca de usuários monta queries SQL concatenando strings diretamente
+  — vulnerabilidade clássica de injeção. Corrija usando queries parametrizadas,
+  mantendo o mesmo contrato de resposta.
+difficulty: "silver"
+mode: "solo"
+time_limit_minutes: 25
+stack:
+  backend: "fastapi"
+  database: "sqlite"
+objective: >
+  Substituir concatenação de strings na query SQL por parâmetros seguros,
+  impedindo injeção sem alterar o comportamento para entradas válidas.
+requirements:
+  - "Usar parâmetros posicionais ou nomeados na query SQL (não f-string ou %)."
+  - "GET /users?name=alice deve continuar retornando o usuário correto."
+  - "Entrada com SQL malicioso deve retornar lista vazia, não erro 500."
+  - "Não alterar os testes oficiais."
+forbidden_actions:
+  - "Alterar testes oficiais"
+  - "Remover o endpoint de busca"
+  - "Usar ORM externo (apenas sqlite3 padrão)"
+visible_tests:
+  - "tests/test_users.py"
+hidden_tests:
+  - "hidden_tests/test_injection.py"
+scoring_profile: "standard_app_build_v1"
+cognitive_layers:
+  - "C3"
+  - "C4"
+tests:
+  - description: "GET /users?name=alice returns the user"
+    type: http
+    request:
+      method: GET
+      path: /users
+    expected_response:
+      status_code: 200

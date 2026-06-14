@@ -1,0 +1,38 @@
+id: "quest_missing_validation"
+title: "Adicionar validação de payload obrigatório"
+description: |
+  Uma API de criação de pedidos aceita silenciosamente payloads incompletos,
+  gravando pedidos sem campos obrigatórios como preço e produto. Adicione
+  validação adequada que retorne 422 para campos faltantes.
+difficulty: "bronze"
+mode: "solo"
+time_limit_minutes: 20
+stack:
+  backend: "fastapi"
+objective: >
+  Garantir que POST /orders rejeite com HTTP 422 qualquer payload sem os
+  campos obrigatórios, mantendo 201 para pedidos válidos completos.
+requirements:
+  - "POST /orders com payload completo deve retornar 201."
+  - "POST /orders sem 'product' ou 'price' deve retornar 422."
+  - "Usar Pydantic para declarar os campos obrigatórios."
+  - "Não alterar os testes oficiais."
+forbidden_actions:
+  - "Alterar testes oficiais"
+  - "Validar manualmente com if/else em vez de Pydantic"
+visible_tests:
+  - "tests/test_orders.py"
+hidden_tests:
+  - "hidden_tests/test_orders_hidden.py"
+scoring_profile: "standard_app_build_v1"
+cognitive_layers:
+  - "C2"
+  - "C3"
+tests:
+  - description: "POST /orders with valid payload returns 201"
+    type: http
+    request:
+      method: POST
+      path: /orders
+    expected_response:
+      status_code: 201

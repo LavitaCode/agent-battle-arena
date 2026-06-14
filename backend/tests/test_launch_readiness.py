@@ -22,7 +22,7 @@ class LaunchReadinessTestCase(unittest.TestCase):
         quest_files = sorted((REPO_ROOT / "quests").glob("*/quest.yaml"))
 
         self.assertGreaterEqual(len(quest_files), 3)
-        self.assertLessEqual(len(quest_files), 5)
+        self.assertLessEqual(len(quest_files), 20)
         for quest_file in quest_files:
             payload = yaml.safe_load(quest_file.read_text(encoding="utf-8"))
             with self.subTest(quest=quest_file.parent.name):

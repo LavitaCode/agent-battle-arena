@@ -1,0 +1,39 @@
+id: "quest_pagination"
+title: "Implementar paginação em listagem"
+description: |
+  Uma API de listagem de produtos retorna todos os registros de uma vez,
+  sem suporte a paginação. Implemente paginação com parâmetros `page` e
+  `page_size`, com valores padrão razoáveis e validação dos limites.
+difficulty: "silver"
+mode: "solo"
+time_limit_minutes: 25
+stack:
+  backend: "fastapi"
+objective: >
+  Adicionar paginação via query params page/page_size ao endpoint GET /products,
+  com validação de range e metadata na resposta (total, page, page_size, pages).
+requirements:
+  - "GET /products aceita query params: page (default 1) e page_size (default 10)."
+  - "page_size máximo: 100. Acima disso, retornar 422."
+  - "page menor que 1 deve retornar 422."
+  - "Resposta deve incluir: items, total, page, page_size, pages."
+  - "Não alterar os testes oficiais."
+forbidden_actions:
+  - "Alterar testes oficiais"
+  - "Carregar todos os registros em memória antes de paginar"
+visible_tests:
+  - "tests/test_pagination.py"
+hidden_tests:
+  - "hidden_tests/test_pagination_hidden.py"
+scoring_profile: "standard_app_build_v1"
+cognitive_layers:
+  - "C3"
+  - "C5"
+tests:
+  - description: "GET /products returns paginated response"
+    type: http
+    request:
+      method: GET
+      path: /products
+    expected_response:
+      status_code: 200
