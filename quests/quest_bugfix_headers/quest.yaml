@@ -21,6 +21,9 @@ visible_tests:
 hidden_tests:
   - "hidden_tests/http/test_error_payloads.py"
 scoring_profile: "standard_app_build_v1"
+cognitive_layers:
+  - "C2"
+  - "C3"
 tests:
   - description: "GET /status returns JSON payload"
     type: http
