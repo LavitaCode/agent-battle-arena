@@ -55,6 +55,10 @@ class InProcessBattleWorker:
             job = self._queue.get_nowait()
         except Empty:
             return False
+        self._execute_job(job)
+        return True
+
+    def _execute_job(self, job: BattleJob) -> None:
         try:
             logger.info(
                 "battle_job_started",
@@ -74,27 +78,8 @@ class InProcessBattleWorker:
                 self._queue.put(BattleJob(battle_id=job.battle_id, attempt=job.attempt + 1))
         finally:
             self._queue.task_done()
-        return True
 
     def _run_forever(self) -> None:
         while True:
             job = self._queue.get()
-            try:
-                logger.info(
-                    "battle_job_started",
-                    extra={"battle_id": job.battle_id, "attempt": job.attempt},
-                )
-                self._handler(job.battle_id)
-                logger.info(
-                    "battle_job_completed",
-                    extra={"battle_id": job.battle_id, "attempt": job.attempt},
-                )
-            except Exception:
-                logger.exception(
-                    "battle_job_failed",
-                    extra={"battle_id": job.battle_id, "attempt": job.attempt},
-                )
-                if job.attempt < self._max_attempts:
-                    self._queue.put(BattleJob(battle_id=job.battle_id, attempt=job.attempt + 1))
-            finally:
-                self._queue.task_done()
+            self._execute_job(job)
