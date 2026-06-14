@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -14,6 +15,8 @@ from typing import List
 from ..core.config import settings
 from ..models import Quest, Run
 from ..services.workspace_policy import validate_workspace_files
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -48,6 +51,67 @@ class SandboxProvider:
     def run(self, run: Run, quest: Quest) -> SandboxExecutionResult:
         """Execute the quest inside the provider."""
         raise NotImplementedError
+
+    # --- shared helpers used by both Docker and LocalProcess providers ---
+
+    def _prepare_run_root(self, run_id: str) -> Path:
+        root = Path(settings.RUN_ARTIFACTS_ROOT)
+        root.mkdir(parents=True, exist_ok=True)
+        run_root = root / run_id
+        if run_root.exists():
+            shutil.rmtree(run_root)
+        run_root.mkdir(parents=True, exist_ok=True)
+        return run_root
+
+    def _copy_starter(self, quest_dir: Path, workspace: Path) -> None:
+        starter_dir = quest_dir / "starter"
+        if starter_dir.exists():
+            shutil.copytree(starter_dir, workspace)
+        else:
+            workspace.mkdir(parents=True, exist_ok=True)
+            app_dir = quest_dir / "app"
+            if app_dir.exists():
+                shutil.copytree(app_dir, workspace / "app")
+
+    def _apply_workspace_files(self, workspace: Path, workspace_files: dict[str, str]) -> List[str]:
+        validate_workspace_files(workspace_files)
+        changed_files: List[str] = []
+        for relative_path, content in workspace_files.items():
+            relative = Path(relative_path)
+            target = workspace / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content, encoding="utf-8")
+            changed_files.append(str(relative))
+        return changed_files
+
+    def _build_workspace_diff(self, quest_dir: Path, workspace: Path) -> str:
+        diff_chunks: list[str] = []
+        starter_dir = quest_dir / "starter"
+        if not starter_dir.exists():
+            return "No starter directory available for diff.\n"
+        starter_files = sorted(path for path in starter_dir.rglob("*") if path.is_file())
+        for starter_file in starter_files:
+            relative_path = starter_file.relative_to(starter_dir)
+            workspace_file = workspace / relative_path
+            starter_lines = starter_file.read_text(encoding="utf-8").splitlines(keepends=True)
+            workspace_lines = (
+                workspace_file.read_text(encoding="utf-8").splitlines(keepends=True)
+                if workspace_file.exists()
+                else []
+            )
+            if starter_lines == workspace_lines:
+                continue
+            diff_chunks.extend(
+                unified_diff(
+                    starter_lines,
+                    workspace_lines,
+                    fromfile=f"starter/{relative_path}",
+                    tofile=f"workspace/{relative_path}",
+                )
+            )
+        if not diff_chunks:
+            return "No changes between starter and workspace.\n"
+        return "".join(diff_chunks)
 
 
 class DockerSandboxProvider(SandboxProvider):
@@ -93,6 +157,12 @@ class DockerSandboxProvider(SandboxProvider):
         self._copy_starter(quest_dir, workspace)
         changed_files = self._apply_workspace_files(workspace, run.workspace_files)
 
+        # Copy test suites into the sandbox volume so the container can run them
+        for suite in ("tests", "hidden_tests"):
+            src = quest_dir / suite
+            if src.exists():
+                shutil.copytree(src, temp_path / suite)
+
         manifest = {
             "quest_id": quest.id,
             "title": quest.title,
@@ -106,25 +176,53 @@ class DockerSandboxProvider(SandboxProvider):
         stderr_path = temp_path / "stderr.log"
         manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
-        script = (
-            "import json; "
-            "from pathlib import Path; "
-            "manifest=json.loads(Path('/sandbox/quest-manifest.json').read_text(encoding='utf-8')); "
-            "visible_count=manifest['visible_count']; "
-            "hidden_count=manifest['hidden_count']; "
-            "payload={"
-            "'passed_tests': visible_count, "
-            "'failed_tests': hidden_count, "
-            "'visible_count': visible_count, "
-            "'hidden_count': hidden_count, "
-            "'notes':["
-            "f\"Workspace temporario em container criado para {manifest['quest_id']}.\", "
-            "'Avaliacao executada em container Docker local.'"
-            "]"
-            "}; "
-            "Path('/sandbox/result.json').write_text(json.dumps(payload), encoding='utf-8'); "
-            "print(json.dumps(payload))"
-        )
+        # Script runs real unittest suites inside the container.
+        # /sandbox is mounted read-write; workspace and test dirs live there.
+        script = r"""
+import io, json, sys, unittest
+from pathlib import Path
+
+sandbox = Path('/sandbox')
+workspace = sandbox / 'workspace'
+result_path = sandbox / 'result.json'
+
+def run_suite(suite_dir):
+    if not suite_dir.exists():
+        return {"total": 0, "passed": 0, "failed": 0, "stdout": ""}
+    sys.path.insert(0, str(workspace))
+    sys.path.insert(1, str(sandbox))
+    loader = unittest.defaultTestLoader
+    suite = loader.discover(str(suite_dir), top_level_dir=str(sandbox))
+    stream = io.StringIO()
+    runner = unittest.TextTestRunner(stream=stream, verbosity=2)
+    result = runner.run(suite)
+    return {
+        "total": result.testsRun,
+        "passed": result.testsRun - len(result.failures) - len(result.errors),
+        "failed": len(result.failures) + len(result.errors),
+        "stdout": stream.getvalue(),
+    }
+
+visible = run_suite(sandbox / 'tests')
+hidden = run_suite(sandbox / 'hidden_tests')
+payload = {
+    "passed_tests": visible["passed"] + hidden["passed"],
+    "failed_tests": visible["failed"] + hidden["failed"],
+    "visible_count": visible["total"],
+    "hidden_count": hidden["total"],
+    "visible_passed": visible["passed"],
+    "visible_failed": visible["failed"],
+    "hidden_passed": hidden["passed"],
+    "hidden_failed": hidden["failed"],
+    "notes": [
+        f"Visible tests: {visible['passed']}/{visible['total']} passaram.",
+        f"Hidden tests: {hidden['passed']}/{hidden['total']} passaram.",
+        "Avaliacao executada em container Docker local.",
+    ],
+}
+result_path.write_text(json.dumps(payload), encoding='utf-8')
+print(json.dumps(payload))
+"""
         completed = subprocess.run(
             self.build_docker_command(str(temp_path), script, max(5, quest.time_limit_minutes * 2)),
             check=True,
@@ -152,35 +250,16 @@ class DockerSandboxProvider(SandboxProvider):
                 "manifest": str(manifest_path),
                 "result": str(result_path),
             },
-            visible_passed=result["visible_count"],
-            visible_failed=0,
-            hidden_passed=0,
-            hidden_failed=result["hidden_count"],
+            visible_passed=result["visible_passed"],
+            visible_failed=result["visible_failed"],
+            hidden_passed=result["hidden_passed"],
+            hidden_failed=result["hidden_failed"],
             changed_files=changed_files,
         )
 
     def _resolve_quest_dir(self, quest_id: str) -> Path:
         repo_root = Path(__file__).resolve().parents[3]
         return repo_root / "quests" / quest_id
-
-    def _prepare_run_root(self, run_id: str) -> Path:
-        root = Path(settings.RUN_ARTIFACTS_ROOT)
-        root.mkdir(parents=True, exist_ok=True)
-        run_root = root / run_id
-        if run_root.exists():
-            shutil.rmtree(run_root)
-        run_root.mkdir(parents=True, exist_ok=True)
-        return run_root
-
-    def _copy_starter(self, quest_dir: Path, workspace: Path) -> None:
-        starter_dir = quest_dir / "starter"
-        if starter_dir.exists():
-            shutil.copytree(starter_dir, workspace)
-        else:
-            workspace.mkdir(parents=True, exist_ok=True)
-            app_dir = quest_dir / "app"
-            if app_dir.exists():
-                shutil.copytree(app_dir, workspace / "app")
 
     def build_docker_command(
         self,
@@ -330,65 +409,6 @@ print(json.dumps(payload))
         payload["stderr"] = completed.stderr
         return payload
 
-    def _build_workspace_diff(self, quest_dir: Path, workspace: Path) -> str:
-        diff_chunks: list[str] = []
-        starter_dir = quest_dir / "starter"
-        if not starter_dir.exists():
-            return "No starter directory available for diff.\n"
-        starter_files = sorted(path for path in starter_dir.rglob("*") if path.is_file())
-        for starter_file in starter_files:
-            relative_path = starter_file.relative_to(starter_dir)
-            workspace_file = workspace / relative_path
-            starter_lines = starter_file.read_text(encoding="utf-8").splitlines(keepends=True)
-            workspace_lines = (
-                workspace_file.read_text(encoding="utf-8").splitlines(keepends=True)
-                if workspace_file.exists()
-                else []
-            )
-            if starter_lines == workspace_lines:
-                continue
-            diff_chunks.extend(
-                unified_diff(
-                    starter_lines,
-                    workspace_lines,
-                    fromfile=f"starter/{relative_path}",
-                    tofile=f"workspace/{relative_path}",
-                )
-            )
-        if not diff_chunks:
-            return "No changes between starter and workspace.\n"
-        return "".join(diff_chunks)
-
-    def _prepare_run_root(self, run_id: str) -> Path:
-        root = Path(settings.RUN_ARTIFACTS_ROOT)
-        root.mkdir(parents=True, exist_ok=True)
-        run_root = root / run_id
-        if run_root.exists():
-            shutil.rmtree(run_root)
-        run_root.mkdir(parents=True, exist_ok=True)
-        return run_root
-
-    def _copy_starter(self, quest_dir: Path, workspace: Path) -> None:
-        starter_dir = quest_dir / "starter"
-        if starter_dir.exists():
-            shutil.copytree(starter_dir, workspace)
-        else:
-            workspace.mkdir(parents=True, exist_ok=True)
-            app_dir = quest_dir / "app"
-            if app_dir.exists():
-                shutil.copytree(app_dir, workspace / "app")
-
-    def _apply_workspace_files(self, workspace: Path, workspace_files: dict[str, str]) -> List[str]:
-        validate_workspace_files(workspace_files)
-        changed_files: List[str] = []
-        for relative_path, content in workspace_files.items():
-            relative = Path(relative_path)
-            target = workspace / relative
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(content, encoding="utf-8")
-            changed_files.append(str(relative))
-        return changed_files
-
 
 class SandboxRunner:
     """Select the best provider available for quest execution."""
@@ -407,6 +427,10 @@ class SandboxRunner:
             if provider.is_available():
                 try:
                     return provider.run(run, quest)
-                except RuntimeError:
+                except Exception as exc:
+                    logger.warning(
+                        "sandbox_provider_failed",
+                        extra={"provider": provider.name, "error": str(exc)},
+                    )
                     continue
         raise RuntimeError("No sandbox provider is available")

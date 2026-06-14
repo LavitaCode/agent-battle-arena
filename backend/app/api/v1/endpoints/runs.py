@@ -1,7 +1,7 @@
 """API routes for managing quest runs."""
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from ....core.dependencies import (
     get_agent_profile_repository,
@@ -21,6 +21,7 @@ from ....repositories.base import (
     ReplayEventRepository,
     RunRepository,
 )
+from ....core.rate_limit import enforce_rate_limit
 from ....services.artifact_service import ArtifactService
 from ....services.execution_service import ExecutionService
 from ....services.post_mortem_service import PostMortemService
@@ -83,6 +84,7 @@ def get_run(
 @router.post("/", response_model=Run, status_code=status.HTTP_201_CREATED, summary="Criar run")
 def create_run(
     run_in: RunCreate,
+    request: Request,
     run_repository: RunRepository = Depends(get_run_repository),
     quest_repository: QuestRepository = Depends(get_quest_repository),
     profile_repository: AgentProfileRepository = Depends(get_agent_profile_repository),
@@ -92,6 +94,7 @@ def create_run(
     sandbox_runner: SandboxRunner = Depends(get_sandbox_runner),
 ):
     """Create a new run for an existing quest and agent profile."""
+    enforce_rate_limit(request, "battle-write")
     service = _build_service(run_repository, quest_repository, profile_repository)
     try:
         run = service.create_run(run_in)

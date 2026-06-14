@@ -45,7 +45,7 @@ def validate_workspace_files(
 def _validate_workspace_path(relative_path: str) -> None:
     if not relative_path or not relative_path.strip():
         raise ValueError("Invalid workspace path: path cannot be empty")
-    if "\\" in relative_path:
+    if "\\" in relative_path or "\x00" in relative_path:
         raise ValueError(f"Invalid workspace path: {relative_path}")
     path = PurePosixPath(relative_path)
     if path.is_absolute() or ".." in path.parts:

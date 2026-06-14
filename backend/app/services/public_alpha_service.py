@@ -57,6 +57,19 @@ class PublicAlphaService:
         self._quest_service = quest_service
         self._sandbox_runner = sandbox_runner
         self._battle_worker = battle_worker or InProcessBattleWorker(self._run_battle)
+        self._cleanup_stale_battles()
+
+    def _cleanup_stale_battles(self) -> None:
+        """Mark battles left in 'running' state from a previous process as failed."""
+        import logging as _logging
+        _log = _logging.getLogger(__name__)
+        try:
+            stale = [b for b in self._store.list_battles() if b.status == "running"]
+            for battle in stale:
+                self._store.update_battle_status(battle.id, "failed")
+                _log.warning("stale_battle_recovered", extra={"battle_id": battle.id})
+        except Exception:
+            pass  # storage may not be initialised yet on first run
 
     def start_auth(self, github_login: Optional[str], invite_code: str) -> tuple[str, str]:
         if settings.ENABLE_MOCK_GITHUB_AUTH and not github_login:

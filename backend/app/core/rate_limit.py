@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from threading import Lock
 from time import time
 
 from fastapi import HTTPException, Request, status
@@ -17,11 +18,13 @@ class _Window:
 
 
 _windows: dict[tuple[str, str], _Window] = {}
+_lock = Lock()
 
 
 def reset_rate_limiter() -> None:
     """Clear in-memory limiter state for tests and local restarts."""
-    _windows.clear()
+    with _lock:
+        _windows.clear()
 
 
 def enforce_rate_limit(request: Request, group: str = "default") -> None:
@@ -32,17 +35,18 @@ def enforce_rate_limit(request: Request, group: str = "default") -> None:
     client_host = request.client.host if request.client else "unknown"
     key = (group, client_host)
     now = time()
-    window = _windows.get(key)
-    if window is None or now - window.started_at >= 60:
-        _windows[key] = _Window(started_at=now, count=1)
-        return
-    if window.count >= limit:
-        increment_metric("rate_limit_hits_total")
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Rate limit exceeded",
-        )
-    window.count += 1
+    with _lock:
+        window = _windows.get(key)
+        if window is None or now - window.started_at >= 60:
+            _windows[key] = _Window(started_at=now, count=1)
+            return
+        if window.count >= limit:
+            increment_metric("rate_limit_hits_total")
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded",
+            )
+        window.count += 1
 
 
 def _limit_for_group(group: str) -> int:
