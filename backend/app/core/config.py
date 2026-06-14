@@ -78,6 +78,11 @@ class Settings:
     )
     GITHUB_USER_URL: str = os.getenv("CQA_GITHUB_USER_URL", "https://api.github.com/user")
     GITHUB_OAUTH_SCOPE: str = os.getenv("CQA_GITHUB_OAUTH_SCOPE", "read:user")
+    # LLM executor keys (optional — only needed when agent profiles use executor field)
+    ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "qwen2.5-coder:7b")
 
 
 settings = Settings()

@@ -1,11 +1,14 @@
 """Services for the public alpha 1v1 battle flow."""
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 from typing import Dict, Optional
 from urllib.parse import urlencode
 
 import httpx
+
+logger = logging.getLogger(__name__)
 
 from ..core.config import settings
 from ..models import (
@@ -36,6 +39,7 @@ from ..repositories.in_memory import (
 )
 from ..sandbox.runner import SandboxRunner
 from ..core.metrics import increment_metric
+from ..executors.registry import get_executor
 from .alpha_store import AlphaStore
 from .battle_event_bus import BattleEventBus, get_bus
 from .battle_worker import InProcessBattleWorker
@@ -328,6 +332,62 @@ class PublicAlphaService:
             raise ValueError("GitHub user response did not include a login")
         return github_login
 
+    def _resolve_workspace_files(
+        self,
+        submitted: dict[str, str],
+        executor_name: Optional[str],
+        quest,
+    ) -> dict[str, str]:
+        """Return workspace_files, calling the LLM executor when configured.
+
+        Falls back to the participant's submitted files on any failure.
+        Output is always validated through workspace_policy before use.
+        """
+        if not executor_name:
+            return submitted
+        executor = get_executor(executor_name)
+        if executor is None:
+            logger.warning(
+                "executor_not_available",
+                extra={"executor": executor_name, "quest_id": quest.id},
+            )
+            return submitted
+        starter_files = self._load_starter_files(quest)
+        generated = executor.execute(quest, starter_files)
+        if not generated:
+            logger.warning(
+                "executor_returned_empty",
+                extra={"executor": executor_name, "quest_id": quest.id},
+            )
+            return {}
+        try:
+            validate_workspace_files(generated)
+        except ValueError:
+            logger.warning(
+                "executor_output_failed_validation",
+                extra={"executor": executor_name, "quest_id": quest.id},
+            )
+            return {}
+        return generated
+
+    def _load_starter_files(self, quest) -> dict[str, str]:
+        """Read the quest's starter directory into a path→content mapping."""
+        import pathlib
+        from ..core.config import settings
+        repo_root = pathlib.Path(__file__).resolve().parents[3]
+        starter = repo_root / "quests" / quest.id / "starter"
+        if not starter.exists():
+            return {}
+        files: dict[str, str] = {}
+        for path in starter.rglob("*"):
+            if path.is_file():
+                rel = str(path.relative_to(starter))
+                try:
+                    files[rel] = path.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError):
+                    pass
+        return files
+
     def _emit(self, battle_id: str, status: str, extra: Optional[Dict] = None) -> None:
         payload: Dict = {"battle_id": battle_id, "status": status}
         if extra:
@@ -351,11 +411,14 @@ class PublicAlphaService:
                 profile = self._store.get_profile(participant.agent_profile_id)
                 if profile is None:
                     raise ValueError("Profile not found during battle execution")
+                workspace_files = self._resolve_workspace_files(
+                    participant.workspace_files, profile.executor, quest
+                )
                 run = Run(
                     id=f"{battle_id}-run-{participant.seat}",
                     quest_id=quest.id,
                     agent_profile_id=profile.id,
-                    workspace_files=participant.workspace_files,
+                    workspace_files=workspace_files,
                     status="created",
                     sandbox_id=None,
                     created_at=datetime.now(timezone.utc),

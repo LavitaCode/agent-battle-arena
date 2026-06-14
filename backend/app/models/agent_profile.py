@@ -50,6 +50,11 @@ class AgentProfileBase(BaseModel):
     template_id: Optional[str] = Field(None, description="Template used as the base profile")
     visibility: str = Field("private", description="Visibility level for the profile")
     version: int = Field(1, description="Profile version")
+    executor: Optional[str] = Field(
+        None,
+        description="LLM executor name ('claude', 'openai', 'ollama'). "
+                    "When set, the arena calls the LLM to produce workspace_files automatically.",
+    )
 
 
 class AgentProfileCreate(AgentProfileBase):
