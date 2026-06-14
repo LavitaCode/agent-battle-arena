@@ -37,6 +37,7 @@ from ..repositories.in_memory import (
 from ..sandbox.runner import SandboxRunner
 from ..core.metrics import increment_metric
 from .alpha_store import AlphaStore
+from .battle_event_bus import BattleEventBus, get_bus
 from .battle_worker import InProcessBattleWorker
 from .execution_service import ExecutionService
 from .quest_service import QuestService
@@ -52,11 +53,13 @@ class PublicAlphaService:
         quest_service: QuestService,
         sandbox_runner: SandboxRunner,
         battle_worker: Optional[InProcessBattleWorker] = None,
+        event_bus: Optional[BattleEventBus] = None,
     ) -> None:
         self._store = store
         self._quest_service = quest_service
         self._sandbox_runner = sandbox_runner
         self._battle_worker = battle_worker or InProcessBattleWorker(self._run_battle)
+        self._bus = event_bus or get_bus()
         self._cleanup_stale_battles()
 
     def _cleanup_stale_battles(self) -> None:
@@ -325,11 +328,24 @@ class PublicAlphaService:
             raise ValueError("GitHub user response did not include a login")
         return github_login
 
+    def _emit(self, battle_id: str, status: str, extra: Optional[Dict] = None) -> None:
+        payload: Dict = {"battle_id": battle_id, "status": status}
+        if extra:
+            payload.update(extra)
+        self._bus.publish(battle_id, payload)
+
+    def stream_battle(self, battle_id: str):
+        """Yield SSE-formatted event strings for a battle until it closes."""
+        import json as _json
+        for event in self._bus.subscribe(battle_id):
+            yield f"data: {_json.dumps(event)}\n\n"
+
     def _run_battle(self, battle_id: str) -> None:
         try:
             detail = self.get_battle_detail(battle_id)
             quest = self._assert_quest_exists(detail.battle.quest_id)
             self._store.update_battle_status(battle_id, "running")
+            self._emit(battle_id, "running")
             bundles: list[BattleRunBundle] = []
             for index, participant in enumerate(detail.participants, start=1):
                 profile = self._store.get_profile(participant.agent_profile_id)
@@ -371,9 +387,13 @@ class PublicAlphaService:
             self._store.save_battle_result(result)
             self._store.update_battle_status(battle_id, "completed")
             increment_metric("battles_completed_total")
+            self._emit(battle_id, "completed", {"winner_participant_id": result.winner_participant_id})
+            self._bus.close(battle_id)
         except Exception:
             self._store.update_battle_status(battle_id, "failed")
             increment_metric("battles_failed_total")
+            self._emit(battle_id, "failed")
+            self._bus.close(battle_id)
             raise
 
     def _build_result(self, battle_id: str, bundles: list[BattleRunBundle]) -> BattleResult:
