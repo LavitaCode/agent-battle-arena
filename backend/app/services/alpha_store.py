@@ -822,8 +822,12 @@ class AlphaStore:
         return row["owner_user_id"] if row else None
 
     def list_leaderboard(self) -> List[LeaderboardEntry]:
+        from .elo_service import DEFAULT_RATING, update as elo_update
+
         battles = [battle for battle in self.list_battles() if battle.status == "completed"]
         stats: dict[str, dict[str, Any]] = {}
+        elo: dict[str, float] = {}
+
         for battle in battles:
             result = self.get_battle_result(battle.id)
             if result is None:
@@ -833,31 +837,43 @@ class AlphaStore:
                 user = self.get_user_by_id(participant.user_id)
                 if user is None:
                     continue
-                current = stats.setdefault(
+                stats.setdefault(
                     user.id,
-                    {
-                        "user": user,
-                        "wins": 0,
-                        "losses": 0,
-                        "ties": 0,
-                        "best_score": 0.0,
-                    },
+                    {"user": user, "wins": 0, "losses": 0, "ties": 0, "best_score": 0.0},
                 )
+                elo.setdefault(user.id, DEFAULT_RATING)
                 bundle = self.get_battle_replay_bundle(battle.id)
                 participant_bundle = next(
                     (item for item in bundle.runs if item.participant_id == participant.id), None
                 )
                 if participant_bundle:
-                    current["best_score"] = max(
-                        current["best_score"],
+                    stats[user.id]["best_score"] = max(
+                        stats[user.id]["best_score"],
                         participant_bundle.run.summary.technical_score,
                     )
                 if result.winner_participant_id is None:
-                    current["ties"] += 1
+                    stats[user.id]["ties"] += 1
                 elif result.winner_participant_id == participant.id:
-                    current["wins"] += 1
+                    stats[user.id]["wins"] += 1
                 else:
-                    current["losses"] += 1
+                    stats[user.id]["losses"] += 1
+
+            # Update ELO for the two participants of this battle
+            if len(participants) == 2:
+                uid_a = self.get_user_by_id(participants[0].user_id)
+                uid_b = self.get_user_by_id(participants[1].user_id)
+                if uid_a and uid_b:
+                    ra = elo.get(uid_a.id, DEFAULT_RATING)
+                    rb = elo.get(uid_b.id, DEFAULT_RATING)
+                    winner_pid = result.winner_participant_id
+                    if winner_pid is None:
+                        score_a = 0.5
+                    elif winner_pid == participants[0].id:
+                        score_a = 1.0
+                    else:
+                        score_a = 0.0
+                    elo[uid_a.id], elo[uid_b.id] = elo_update(ra, rb, score_a)
+
         leaderboard = [
             LeaderboardEntry(
                 user_id=data["user"].id,
@@ -867,12 +883,13 @@ class AlphaStore:
                 losses=data["losses"],
                 ties=data["ties"],
                 best_score=data["best_score"],
+                elo_rating=round(elo.get(data["user"].id, DEFAULT_RATING), 2),
             )
             for data in stats.values()
         ]
         return sorted(
             leaderboard,
-            key=lambda item: (-item.wins, item.losses, -item.best_score, item.github_login),
+            key=lambda item: (-item.elo_rating, -item.wins, item.losses, item.github_login),
         )
 
     def _participant_from_row(self, row: Optional[Any]) -> Optional[BattleParticipant]:
