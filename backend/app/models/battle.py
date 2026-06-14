@@ -126,5 +126,6 @@ class LeaderboardEntry(BaseModel):
     losses: int = Field(0, description="Completed losses")
     ties: int = Field(0, description="Completed ties")
     best_score: float = Field(0.0, description="Best technical score across battles")
+    elo_rating: float = Field(1200.0, description="ELO rating (K=32, default 1200)")
 
     model_config = ConfigDict(from_attributes=True)

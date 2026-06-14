@@ -1,5 +1,6 @@
 """Battle endpoints for the public alpha."""
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import StreamingResponse
 
 from ....core.config import settings
 from ....core.dependencies import get_public_alpha_service
@@ -129,3 +130,26 @@ def get_battle_replay(
 ):
     """Return replay, post-mortem and run bundles for both participants."""
     return service.get_battle_replay(battle_id)
+
+
+@router.get("/{battle_id}/stream", summary="SSE stream de status da battle")
+def stream_battle_status(
+    battle_id: str,
+    service: PublicAlphaService = Depends(get_public_alpha_service),
+):
+    """Server-Sent Events stream of battle status transitions.
+
+    Emits JSON objects: {"battle_id": "...", "status": "running"|"completed"|"failed", ...}
+    Closes automatically when the battle reaches a terminal state.
+    Set X-Accel-Buffering: no on reverse proxies to avoid buffering.
+    """
+    try:
+        service.get_battle_detail(battle_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+    return StreamingResponse(
+        service.stream_battle(battle_id),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
