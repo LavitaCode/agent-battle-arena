@@ -22,6 +22,9 @@ visible_tests:
 hidden_tests:
   - "hidden_tests/validation/test_missing_theme.py"
 scoring_profile: "standard_app_build_v1"
+cognitive_layers:
+  - "C3"
+  - "C4"
 tests:
   - description: "POST /profile/settings returns 201"
     type: http
