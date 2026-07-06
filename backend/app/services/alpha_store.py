@@ -892,6 +892,48 @@ class AlphaStore:
             key=lambda item: (-item.elo_rating, -item.wins, item.losses, item.github_login),
         )
 
+    def list_completed_battles_for_export(self) -> list[dict]:
+        """Return completed battles with participants for DPO export. Read-only."""
+        with self._connect() as conn:
+            cur = conn.execute(
+                "SELECT id, quest_id, status, finished_at FROM battles WHERE status = 'completed' ORDER BY finished_at ASC"
+            )
+            battles = [dict(row) for row in cur.fetchall()]
+            result = []
+            for b in battles:
+                # Fetch result to get scores (score_left/score_right keyed by seat)
+                cur_result = conn.execute(
+                    "SELECT payload FROM battle_results WHERE battle_id = ?",
+                    (b["id"],),
+                )
+                result_row = cur_result.fetchone()
+                if result_row is None:
+                    continue
+                import json as _json
+                result_payload = _json.loads(result_row["payload"])
+                score_left = result_payload.get("score_left", 0)
+                score_right = result_payload.get("score_right", 0)
+                cur2 = conn.execute(
+                    "SELECT id, user_id, seat, workspace_files FROM battle_participants WHERE battle_id = ? ORDER BY seat",
+                    (b["id"],),
+                )
+                raw_participants = [dict(row) for row in cur2.fetchall()]
+                if len(raw_participants) < 2:
+                    continue
+                # Attach score per participant based on seat
+                for p in raw_participants:
+                    if p["seat"] == "left":
+                        p["score"] = score_left
+                    elif p["seat"] == "right":
+                        p["score"] = score_right
+                    else:
+                        p["score"] = 0
+                # Sort DESC by score so winner is first
+                participants = sorted(raw_participants, key=lambda p: p["score"], reverse=True)
+                b["participants"] = participants
+                result.append(b)
+            return result
+
     def _participant_from_row(self, row: Optional[Any]) -> Optional[BattleParticipant]:
         if row is None:
             return None

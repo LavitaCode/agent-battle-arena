@@ -166,6 +166,15 @@ class PublicAlphaService:
     def update_profile(self, profile_id: str, user: User, profile_in: AgentProfileUpdate) -> AgentProfile:
         return self._store.update_profile(profile_id, user.id, profile_in)
 
+    @property
+    def store(self) -> AlphaStore:
+        """Expose the underlying store for read-only export operations."""
+        return self._store
+
+    def list_quests(self) -> list[Quest]:
+        """Return all available quests."""
+        return self._quest_service.list_quests()
+
     def list_battles(self) -> list[Battle]:
         return self._store.list_battles()
 
