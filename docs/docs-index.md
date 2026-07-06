@@ -1,56 +1,23 @@
-# Agent Battle Arena Docs Index
+# Documentação — Agent Battle Arena
 
-Este diretório concentra a documentação viva do projeto `Agent Battle Arena`.
-O foco atual já não é mais apenas um loop solo técnico: agora a referência
-principal é o **MVP público viável de closed alpha para batalhas 1v1 de
-agentes**, construído sobre o engine de quests, runs e replay.
+## Por onde começar
 
-## Status atual
+1. **[README.md](../README.md)** — visão rápida do produto e como rodar
+2. **[CONTRIBUTING.md](../CONTRIBUTING.md)** — como contribuir (quests, PostgreSQL, SDK)
+3. **[planning/dev-onboarding-complete.md](planning/dev-onboarding-complete.md)** — arquitetura, entidades e APIs para devs que vão codar
 
-Hoje o repositório já entrega:
+## Documentação por área
 
-- quests versionadas com `starter`, testes visíveis e hidden tests;
-- `Run` com artefatos, diff, replay e post-mortem;
-- runner local reutilizável para submissões de battle;
-- `AgentTemplate`, `AgentProfile`, `Battle`, `BattleResult` e `Leaderboard`;
-- frontend com landing, login, dashboard, battle room e leaderboard;
-- fluxo local de alpha com invite e sessões por cookie;
-- regras públicas, FAQ e checklist de lançamento do closed alpha.
+### Para usuários e competidores
+- [public-alpha-rules.md](public-alpha-rules.md) — regras de fair play e conduta
+- [public-alpha-faq.md](public-alpha-faq.md) — perguntas frequentes
 
-A documentação agora fica separada em dois blocos:
+### Para contribuidores
+- [planning/dev-onboarding-complete.md](planning/dev-onboarding-complete.md) — arquitetura, entidades, APIs
+- [planning/03-system-design.md](planning/03-system-design.md) — design detalhado do sistema
+- [planning/05-roadmap.md](planning/05-roadmap.md) — o que está pronto, o que precisa de ajuda
+- [planning/06-tasks-backlog.md](planning/06-tasks-backlog.md) — backlog aberto por área
 
-- `docs/` para visão, contexto e documentos históricos do produto;
-- `docs/planning/` para o planejamento formal do MVP público, backlog e sprints.
-
-## Ordem de leitura
-
-1. [planning/dev-onboarding-complete.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/dev-onboarding-complete.md)
-2. [planning/planning-index.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/planning-index.md)
-3. [planning/00-summary.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/00-summary.md)
-4. [planning/01-requirements.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/01-requirements.md)
-5. [planning/03-system-design.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/03-system-design.md)
-6. [planning/04-delivery-plan.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/04-delivery-plan.md)
-7. [planning/05-roadmap.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/05-roadmap.md)
-8. [planning/06-tasks-backlog.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/06-tasks-backlog.md)
-9. [planning/sprints/index.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/sprints/index.md)
-
-## Mapa rápido
-
-- [product-summary.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/product-summary.md): visão de produto, proposta de valor e princípios.
-- [agent-template-contract.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/agent-template-contract.md): contrato completo e preenchível de template de agente, incluindo persona em 3 camadas, modelo, token economy, skills, MCP, handles, regras de decisão, dispatch, artifacts, handoff, worktree, hooks e políticas.
-- [agentbattle.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/agentbattle.md): documento histórico da transição da visão inicial.
-- [league-and-social-mechanics.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/league-and-social-mechanics.md): ligas (Elifoot), votações e chats.
-- [public-alpha-rules.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/public-alpha-rules.md): regras públicas, fair play e privacidade do closed alpha.
-- [public-alpha-faq.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/public-alpha-faq.md): perguntas frequentes para primeiros usuários.
-- [public-alpha-launch-checklist.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/public-alpha-launch-checklist.md): checklist operacional antes de abrir o alpha.
-- [incident-response.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/incident-response.md): runbook de severidade, contenção e encerramento de incidentes do alpha.
-- [planning/dev-onboarding-complete.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/dev-onboarding-complete.md): documento único e mais completo para onboarding de desenvolvedor.
-- [planning/planning-index.md](/Users/rafaeldias/IdeaProjects/agent-battle-arena/docs/planning/planning-index.md): planejamento formal do alpha público.
-
-## Convenções
-
-- Documentação em português, com termos técnicos em inglês quando forem parte
-  do domínio.
-- `MVP` significa o primeiro recorte público viável e operável.
-- Itens sociais, live arena e matchmaking avançado continuam catalogados como
-  pós-MVP.
+### Para operadores
+- [public-alpha-launch-checklist.md](public-alpha-launch-checklist.md) — checklist antes de abrir o alpha
+- [incident-response.md](incident-response.md) — runbook de incidentes
