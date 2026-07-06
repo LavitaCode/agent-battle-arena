@@ -67,6 +67,7 @@ class QuestBase(BaseModel):
         default_factory=list,
         description="Cognitive layer tags (e.g. C1-C6) indicating required reasoning depth",
     )
+    language: str = Field("python", description="Runtime language for sandbox execution (python, javascript, go, rust)")
 
 
 class QuestCreate(QuestBase):

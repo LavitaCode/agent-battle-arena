@@ -36,6 +36,10 @@ class Settings:
     ALLOW_EXTERNAL_NETWORK: bool = os.getenv("CQA_ALLOW_EXTERNAL_NETWORK", "false").lower() == "true"
     SANDBOX_PREFERRED_PROVIDER: str = os.getenv("CQA_SANDBOX_PREFERRED_PROVIDER", "docker")
     DOCKER_RUNNER_IMAGE: str = os.getenv("CQA_DOCKER_RUNNER_IMAGE", "cqa-runner-local:latest")
+    RUNNER_IMAGE_PYTHON: str = os.getenv("CQA_RUNNER_IMAGE_PYTHON", "cqa-runner-python:latest")
+    RUNNER_IMAGE_JAVASCRIPT: str = os.getenv("CQA_RUNNER_IMAGE_JAVASCRIPT", "cqa-runner-javascript:latest")
+    RUNNER_IMAGE_GO: str = os.getenv("CQA_RUNNER_IMAGE_GO", "cqa-runner-go:latest")
+    RUNNER_IMAGE_RUST: str = os.getenv("CQA_RUNNER_IMAGE_RUST", "cqa-runner-rust:latest")
     RUN_ARTIFACTS_ROOT: str = os.getenv("CQA_RUN_ARTIFACTS_ROOT", "/tmp/cqa_runs")
     RATE_LIMIT_ENABLED: bool = os.getenv("CQA_RATE_LIMIT_ENABLED", "true").lower() == "true"
     RATE_LIMIT_REQUESTS_PER_MINUTE: int = int(os.getenv("CQA_RATE_LIMIT_REQUESTS_PER_MINUTE", "60"))

@@ -1,0 +1,5 @@
+FROM rust:1.78-slim
+WORKDIR /sandbox
+RUN useradd -m -u 10001 runner
+USER runner
+CMD ["rustc", "--version"]

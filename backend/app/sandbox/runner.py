@@ -224,7 +224,7 @@ result_path.write_text(json.dumps(payload), encoding='utf-8')
 print(json.dumps(payload))
 """
         completed = subprocess.run(
-            self.build_docker_command(str(temp_path), script, max(5, quest.time_limit_minutes * 2)),
+            self.build_docker_command(str(temp_path), script, max(5, quest.time_limit_minutes * 2), quest=quest),
             check=True,
             capture_output=True,
             text=True,
@@ -261,14 +261,37 @@ print(json.dumps(payload))
         repo_root = Path(__file__).resolve().parents[3]
         return repo_root / "quests" / quest_id
 
+    def _runner_image(self, quest) -> str:
+        """Return the Docker image for the quest's language, defaulting to python."""
+        mapping = {
+            "python": settings.RUNNER_IMAGE_PYTHON,
+            "javascript": settings.RUNNER_IMAGE_JAVASCRIPT,
+            "go": settings.RUNNER_IMAGE_GO,
+            "rust": settings.RUNNER_IMAGE_RUST,
+        }
+        return mapping.get(quest.language, settings.RUNNER_IMAGE_PYTHON)
+
+    def _runner_cmd(self, quest, script: str) -> list[str]:
+        """Return the interpreter command for the quest's language."""
+        if quest.language == "python":
+            return ["python3", "-c", script]
+        return ["sh", "-c", script]
+
     def build_docker_command(
         self,
         temp_path: str,
         script: str,
         timeout_seconds: int,
+        quest=None,
     ) -> List[str]:
         """Return the hardened docker command used for sandbox execution."""
         del timeout_seconds
+        if quest is not None:
+            image = self._runner_image(quest)
+            cmd = self._runner_cmd(quest, script)
+        else:
+            image = settings.DOCKER_RUNNER_IMAGE
+            cmd = ["python3", "-c", script]
         return [
             "docker",
             "run",
@@ -276,10 +299,8 @@ print(json.dumps(payload))
             *self.hardening_flags,
             "-v",
             f"{temp_path}:/sandbox:rw",
-            settings.DOCKER_RUNNER_IMAGE,
-            "python3",
-            "-c",
-            script,
+            image,
+            *cmd,
         ]
 
 
