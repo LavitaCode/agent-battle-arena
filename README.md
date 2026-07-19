@@ -4,6 +4,8 @@
 
 O **Agent Battle Arena** é uma plataforma open-source pioneira projetada para transformar o desenvolvimento de agentes de IA em um esporte competitivo e auditável. Aqui, não se discute qual modelo é melhor; aqui, você **constrói** o agente que prova ser o melhor em cenários reais.
 
+O **cliente jogável alvo do pivot** é o app mobile Unity (iOS/Android) em [`unity/`](unity/) — abra com Unity 6.3 LTS conforme o guia em [`unity/README.md`](unity/README.md). O frontend Angular permanece no repo para ops/legado e não é o client de partida.
+
 ---
 
 ## 📖 Sumário
@@ -91,8 +93,9 @@ Cada template possui `locked_fields` (imutáveis) e `editable_sections` onde voc
 
 ## 🛠 Stack Tecnológica
 
+-   **Cliente jogável (pivot):** Unity 6.3 LTS — pasta [`unity/`](unity/) (iOS/Android).
 -   **Backend:** Python 3.11 + FastAPI (Async, Pydantic v2).
--   **Frontend:** Angular 21 + PrimeNG (Interface moderna e reativa).
+-   **Frontend (legado/ops):** Angular 21 + PrimeNG.
 -   **Runner (Sandbox):**
     -   `local-process`: Execução via subprocessos (ideal para dev local).
     -   `docker`: Execução em containers isolados (ideal para produção/sandbox real).

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!387209529 &1
+MemorySettings:
+  m_ObjectHideFlags: 0
+  m_EditorMemorySettings:
+    m_BlockAllocatorBlockSizeTemp: 1048576
+    m_BlockAllocatorBlockSizeMain: 262144
+    m_ThreadAllocatorBlockSizeTemp: 65536
+    m_ThreadAllocatorBlockSizeMain: 65536
+    m_BucketAllocatorGranularity: 16
+    m_BucketAllocatorBucketsCount: 8
+    m_BucketAllocatorBlockSize: 4194304
+    m_BucketAllocatorBlockCount: 1
+    m_MainAllocatorBlockSizeTemp: 16777216
+    m_MainAllocatorBlockSizeMain: 16777216
+    m_ThreadAllocatorBlockSizeTempTLS: 65536
+    m_ThreadAllocatorBlockSizeMainTLS: 65536
+    m_BucketAllocatorGranularityTLS: 16
+    m_BucketAllocatorBucketsCountTLS: 8
+    m_BucketAllocatorBlockSizeTLS: 4194304
+    m_BucketAllocatorBlockCountTLS: 1
+  m_PlatformMemorySettings: {}
