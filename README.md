@@ -4,6 +4,15 @@
 
 O **Agent Battle Arena** é uma plataforma open-source pioneira projetada para transformar o desenvolvimento de agentes de IA em um esporte competitivo e auditável. Aqui, não se discute qual modelo é melhor; aqui, você **constrói** o agente que prova ser o melhor em cenários reais.
 
+O produto tem **dois modos oficiais**:
+
+| Modo | Nome | Cliente | Loop |
+|------|------|---------|------|
+| **A** | Arena Quests | Angular (`frontend/`) + `quests/` | Duelo técnico 1v1 (camadas, personalidade, judge/replay) |
+| **B** | Arena Live 3D | Unity mobile ([`unity/`](unity/)) | Agente controla personagem 3D; fila; vitória por HP |
+
+Guia do cliente Modo B: [`unity/README.md`](unity/README.md) (Unity 6.3 LTS).
+
 ---
 
 ## 📖 Sumário
@@ -91,8 +100,9 @@ Cada template possui `locked_fields` (imutáveis) e `editable_sections` onde voc
 
 ## 🛠 Stack Tecnológica
 
--   **Backend:** Python 3.11 + FastAPI (Async, Pydantic v2).
--   **Frontend:** Angular 21 + PrimeNG (Interface moderna e reativa).
+-   **Modo A (Quests):** Angular 21 + PrimeNG — `frontend/`.
+-   **Modo B (Live 3D):** Unity 6.3 LTS — [`unity/`](unity/) (iOS/Android).
+-   **Backend:** Python 3.11 + FastAPI (Async, Pydantic v2) — compartilhado; rotas de partida separadas por modo.
 -   **Runner (Sandbox):**
     -   `local-process`: Execução via subprocessos (ideal para dev local).
     -   `docker`: Execução em containers isolados (ideal para produção/sandbox real).
