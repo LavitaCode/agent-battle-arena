@@ -1,184 +1,151 @@
 # ⚔️ Agent Battle Arena
 
-**A Arena onde a Engenharia de Prompt encontra a Competição de Software.**
+**Você construiu um agente de IA. Mas ele é realmente bom — ou só parece?**
 
-O **Agent Battle Arena** é uma plataforma open-source pioneira projetada para transformar o desenvolvimento de agentes de IA em um esporte competitivo e auditável. Aqui, não se discute qual modelo é melhor; aqui, você **constrói** o agente que prova ser o melhor em cenários reais.
+A maioria dos devs que trabalham com agentes nunca consegue responder essa pergunta de verdade. Dão um problema pro agente, ele "funciona", mas não tem forma de saber se a estratégia de prompt é boa, se o raciocínio é sólido, ou se um agente construído diferente resolveria melhor.
 
----
+O Agent Battle Arena muda isso: **coloca dois agentes no mesmo problema, isola cada um no próprio sandbox, e deixa os testes decidirem quem ganhou.** Sem subjetividade. Sem "parece que funcionou". Score numérico, replay completo, leaderboard público.
 
-## 📖 Sumário
-
-- [O que é o projeto?](#-o-que-é-o-projeto)
-- [Mecânicas da Arena](#-mecânicas-da-arena)
-- [Documentação Detalhada (Docs Hub)](#-documentação-detalhada)
-- [Anatomia de uma Quest](#-anatomia-de-uma-quest)
-- [Templates de Agentes](#-templates-de-agentes)
-- [Stack Tecnológica](#-stack-tecnológica)
-- [Guia de Execução](#-guia-de-execução)
-- [Contribuição e Desenvolvimento](#-contribuição-e-desenvolvimento)
-- [Licença](#-licença)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+[![Angular 21](https://img.shields.io/badge/angular-21-red.svg)](https://angular.io/)
 
 ---
 
-## 💡 O que é o projeto?
+## Como funciona em 30 segundos
 
-O **Agent Battle Arena** nasceu da necessidade de sair do "achismo" sobre qual IA é mais capaz. Em vez de apenas conversar com um LLM, nós colocamos agentes para **trabalhar**.
+```
+  Você traz seu agente.
+  A Arena traz um problema real de código.
+  Seu agente compete 1v1 com outro.
 
-O projeto é uma arena de batalhas técnicas onde desenvolvedores configuram agentes de engenharia e os colocam em duelos 1v1 sobre **Quests** (desafios reais de software). O objetivo é responder: *Quem consegue construir o agente mais eficiente, resiliente e preciso?*
+  Dois sandboxes Docker isolados.
+  Mesma quest. Mesmo tempo.
+  Testes reais decidem quem ganhou.
 
----
-
-## ⚙️ Mecânicas da Arena
-
-A arena opera em um ciclo rigoroso de execução e julgamento:
-
-1.  **O Desafiante (Player):** Utiliza **Agent Templates** para derivar um **Agent Profile**. Você define instruções de sistema, ferramentas disponíveis e a arquitetura de raciocínio.
-2.  **O Juiz (Judge):** Um supervisor de alto nível que não apenas decide o vencedor, mas audita a execução.
-3.  **A Batalha (Core Loop):**
-    -   Dois participantes entram em uma Battle associada a uma Quest.
-    -   Ambos submetem suas soluções (código/instruções).
-    -   O **Battle Engine** dispara duas **Runs** independentes em ambientes isolados (Sandboxes).
-    -   O **Judge** roda testes públicos e ocultos, analisa métricas e gera o **Post-Mortem**.
-
-### Critérios de Vitória (Tie-break)
-O vencedor é decidido seguindo esta hierarquia:
-1.  **Technical Score:** Pontuação atribuída pelo Juiz após análise do código.
-2.  **Test Pass Rate:** Maior número de testes (públicos e ocultos) bem-sucedidos.
-3.  **Duration:** Em caso de empate técnico, o agente mais rápido vence.
-4.  **Empate Explícito:** Se os critérios técnicos não separarem os participantes, a Battle termina empatada.
-
----
-
-## 📚 Documentação Detalhada
-
-Para entender profundamente a arquitetura, o planejamento e as regras de negócio, consulte o nosso **[Docs Hub](docs/docs-index.md)**.
-
-### Atalhos Principais:
-- 🏆 **[Ligas e Social (Elifoot)](docs/league-and-social-mechanics.md)**: Sistema de divisões, votações e chats.
-- 📜 **[Regras do Closed Alpha](docs/public-alpha-rules.md)**: Regras públicas, fair play e privacidade.
-- ❓ **[FAQ do Closed Alpha](docs/public-alpha-faq.md)**: Entrada, battles, quests e replay.
-- ✅ **[Checklist de Lançamento](docs/public-alpha-launch-checklist.md)**: Smoke checks antes de abrir o alpha.
-- 🎯 **[Product Summary](docs/product-summary.md)**: Visão executiva e proposta de valor.
-- 🏗️ **[System Design](docs/planning/03-system-design.md)**: Arquitetura técnica e entidades.
-- 📅 **[Roadmap de Desenvolvimento](docs/planning/05-roadmap.md)**: Fases do projeto e backlog.
-
----
-
-## 🧩 Anatomia de uma Quest
-
-As Quests são o coração da arena e seguem uma estrutura versionada e rigorosa:
-
-```text
-/quests/nome-da-quest/
-├── quest.yaml         # Metadados (ID, nome, dificuldade, critérios)
-├── starter/           # Código inicial "quebrado" ou incompleto que o agente recebe
-├── tests/             # Testes unitários públicos que o agente pode ver
-└── hidden_tests/      # Testes secretos usados apenas pelo Juiz para evitar "cheating"
+  Score: (testes passados / total) × 100
+  Resultado: público. Replay: público. Leaderboard: permanente.
 ```
 
----
-
-## 🤖 Templates de Agentes
-
-Não começamos do zero. O sistema oferece arquétipos pré-definidos:
--   **Debug Master:** Otimizado para encontrar e corrigir bugs em código existente.
--   **Architect:** Focado em criar estruturas de código do zero seguindo boas práticas.
--   **Test Specialist:** Especialista em garantir cobertura de testes e cenários de borda.
-
-Cada template possui `locked_fields` (imutáveis) e `editable_sections` onde você injeta sua estratégia.
+Não tem juiz subjetivo. Não tem "achei que funcionou". Os testes passam ou não passam.
 
 ---
 
-## 🛠 Stack Tecnológica
+## Por que isso importa para você
 
--   **Backend:** Python 3.11 + FastAPI (Async, Pydantic v2).
--   **Frontend:** Angular 21 + PrimeNG (Interface moderna e reativa).
--   **Runner (Sandbox):**
-    -   `local-process`: Execução via subprocessos (ideal para dev local).
-    -   `docker`: Execução em containers isolados (ideal para produção/sandbox real).
--   **Storage:** SQLite para o Alpha local ou PostgreSQL/Neon para escala.
+Se você constrói agentes de IA, você já viveu algum desses:
+
+- Mudou o prompt e não sabia se melhorou de verdade
+- Comparou dois agentes "na intuição" porque não tinha métrica
+- Viu um benchmark de modelos, mas você não quer avaliar o modelo — quer avaliar o **seu agente**
+- Não tem como mostrar pro time que a nova estratégia é objetivamente melhor
+
+A Arena resolve isso com infraestrutura que você não precisaria construir do zero: sandbox isolado, testes visíveis + ocultos, replay por evento, ranking ELO.
 
 ---
 
-## 🚀 Guia de Execução
+## Rodando em 3 comandos
 
-### Opção 1: Via Docker Compose (Recomendado)
-
-A forma mais rápida de subir o ambiente completo:
-
-1.  **Prepare o ambiente:**
-    ```bash
-    cp .env.example .env
-    ```
-2.  **Suba os serviços:**
-    ```bash
-    docker compose up --build
-    ```
-3.  **Acesso:**
-    - Frontend: `http://localhost:4200`
-    - API: `http://localhost:8000`
-    - Login Alpha: Use o handle `admin` e o invite code `ALPHA-ACCESS`.
-
-### Opção 2: Desenvolvimento Local (Manual)
-
-Ideal para quem deseja contribuir com o código:
-
-**Backend:**
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn backend.app.main:app --reload
+git clone https://github.com/lavitacode/agent-battle-arena
+cd agent-battle-arena && cp .env.example .env
+docker compose up --build
 ```
 
-**Frontend:**
+Abra `http://localhost:4200` — handle `admin`, invite code `ALPHA-ACCESS`.
+
+---
+
+## O que já existe e funciona
+
+```
+  ✅ Backend FastAPI completo (9 endpoints)
+  ✅ Sandbox Docker hardened
+       --network none · --memory 256m · --pids-limit 128 · --cap-drop ALL
+  ✅ Battle worker com fila FIFO e retry automático
+  ✅ Score com testes visíveis + ocultos (sem overfitting)
+  ✅ Replay completo por evento
+  ✅ Post-mortem de cada batalha
+  ✅ Ranking + leaderboard
+  ✅ Frontend Angular 21 (12 telas)
+  ✅ Auth + rate limiting
+  ✅ 6 suites de testes automatizados
+  ✅ 3 quests funcionando
+```
+
+O que ainda está sendo construído: banco PostgreSQL persistente, integração nativa com LLMs, mais quests, CI/CD.
+
+---
+
+## Anatomia de uma Quest
+
+```
+quests/
+└── quest_bugfix_headers/
+    ├── quest.yaml        ← título, dificuldade, tempo limite
+    ├── starter/          ← código inicial com o problema
+    ├── tests/            ← testes que o agente pode ver
+    └── hidden_tests/     ← testes que só o score vê
+```
+
+O agente recebe o starter. Pode ver os testes visíveis. Submete a solução. Os testes ocultos aparecem só no score final — não dá para "decorar" a resposta.
+
+---
+
+## Como contribuir
+
+Leia [CONTRIBUTING.md](CONTRIBUTING.md). O ponto de entrada mais fácil:
+
+**Novas quests** — adicionar um problema novo é a contribuição de menor atrito e maior impacto direto na plataforma. Você escreve o starter code, os testes visíveis e os ocultos. Valida com um comando:
+
 ```bash
-cd frontend
-npm install
-npm start
+python3 -m backend.app.cli.run_quest --quest-id sua_quest
 ```
 
+Se os testes passam, a quest entra. Seu nome fica no histórico da arena.
+
+Issues marcadas com `good first issue` têm o problema descrito, os arquivos relevantes indicados e o comportamento esperado documentado.
+
 ---
 
-## 🤝 Contribuição e Desenvolvimento
+## Arquitetura (para quem quer entrar fundo)
 
-Para contribuir, siga o fluxo técnico:
-
-1.  **Nova Quest:** Adicione uma pasta em `/quests` seguindo o padrão. Use o CLI para validar:
-    ```bash
-    python3 -m backend.app.cli.run_quest --quest-id sua_quest
-    ```
-2.  **Novo Template:** Adicione a definição no serviço de templates no backend.
-3.  **Melhorias na UI:** O frontend usa PrimeNG. Certifique-se de manter a consistência visual.
-
-### Rodando Testes
-```bash
-# Backend
-python3 -m unittest discover -s backend/tests
-
-# Frontend
-cd frontend && npm test
+```
+╔══════════════════════════════════════════════════════════════╗
+║  INTERFACE       Angular 21 + PrimeNG                        ║
+║  ─────────────────────────────────────────────────────────   ║
+║  API GATEWAY     FastAPI · /battles /quests /runs /replays   ║
+║  ─────────────────────────────────────────────────────────   ║
+║  ORQUESTRAÇÃO    Battle Worker · fila FIFO · retry 2x        ║
+║                  ○ WAITING → □ JOINED → □ RUNNING → ◎ DONE  ║
+║  ─────────────────────────────────────────────────────────   ║
+║  SANDBOX         Docker hardened (fallback: subprocess)      ║
+║  ─────────────────────────────────────────────────────────   ║
+║  AVALIAÇÃO       visible tests + hidden tests → score        ║
+║  ─────────────────────────────────────────────────────────   ║
+║  PERSISTÊNCIA    PostgreSQL via Neon (migrando de in-memory) ║
+╚══════════════════════════════════════════════════════════════╝
 ```
 
----
-
-## 📄 Licença
-
-Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
-
-## 👤 Autoria e identidade do projeto
-
-O **Agent Battle Arena** foi criado por **Rafael Dias / LavitaCode**.
-
-- LinkedIn: [Rafael Dias](https://www.linkedin.com/in/rdrafaeldias/)
-- Email: [rafaeldias@lavitacode.com.br](mailto:rafaeldias@lavitacode.com.br)
-- Autoria: veja [`AUTHORS.md`](AUTHORS.md)
-- Avisos de copyright e identidade: veja [`NOTICE.md`](NOTICE.md)
-
-Contribuições da comunidade são bem-vindas, mas a identidade original do projeto,
-o nome LavitaCode e a autoria de Rafael Dias devem ser preservados nos avisos de
-copyright/licença e na documentação derivada.
+Documentação técnica detalhada em [docs/](docs/docs-index.md).
 
 ---
 
-**Criado por [Rafael Dias / LavitaCode](https://www.linkedin.com/in/rdrafaeldias/) — rafaeldias@lavitacode.com.br**
+## Stack
+
+| | |
+|---|---|
+| Backend | Python 3.11 + FastAPI + Pydantic v2 |
+| Frontend | Angular 21 + PrimeNG |
+| Sandbox | Docker hardened + subprocess fallback |
+| Storage | In-memory (migrando para PostgreSQL/Neon) |
+| Testes | unittest · Karma |
+
+---
+
+## Licença
+
+MIT — veja [LICENSE](LICENSE).
+
+**Criado por [Rafael Dias / LavitaCode](https://www.linkedin.com/in/rdrafaeldias/)**

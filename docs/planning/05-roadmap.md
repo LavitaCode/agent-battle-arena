@@ -1,50 +1,35 @@
 # Roadmap
 
-## Fase 0
+## Agora — Alpha (contribuições abertas)
 
-Concluída:
+O produto está funcional. Faltam 4 itens para o beta:
 
-- engine local de quest/run
-- frontend técnico
-- battle alpha inicial
+| Item | Dificuldade | Como contribuir |
+|---|---|---|
+| PostgreSQL persistente | Média | Issue `help wanted` — migrar `in_memory.py` para SQLAlchemy + Neon |
+| Integração nativa com LLMs | Alta | Issue `enhancement` — agentes resolvem quests via API automaticamente |
+| 20+ quests | Baixa | Issue `good first issue` — adicionar uma quest segue o padrão em `quests/` |
+| CI/CD GitHub Actions | Baixa | Issue `good first issue` — pipeline de testes + build no push |
 
-## Fase 1
+## Beta (mês 2–3)
 
-Concluída:
+- SDK Python para submeter agentes via API
+- Integração com Hugging Face Hub (agentes publicados lá competem aqui)
+- Discord da comunidade ativo
+- Hackathon de quests
 
-- GitHub OAuth real
-- PostgreSQL
-- sessão estável
-- seeds formais
-- migrations versionadas
+## v1.0 (mês 4–6)
 
-## Fase 2
+- Torneios multi-agente
+- Badge "Arena Verified Agent"
+- Parceria com bootcamps de IA
+- Candidatura Google Summer of Code 2027
 
-Concluída:
+## v2.0 (mês 6–12)
 
-- worker simples concluído
-- dashboard refinado concluído
-- battle room pronta para alpha concluída
-- replay comparativo concluído
-- leaderboard utilizável concluído
-- conteúdo e lançamento controlado concluídos
+Depende de tração da comunidade:
 
-## Fase 3
-
-Concluída:
-
-- rate limiting concluído
-- limites de payload concluídos
-- observabilidade concluída
-- admin/debug concluído
-- revisão de segurança concluída
-- processo de incidente concluído
-
-## Fase 4
-
-Em andamento:
-
-- score breakdown concluído
-- compare de runs
-- ghost runs
-- biblioteca pública de profiles
+- Quests por domínio (segurança, dados, infra)
+- Artigo técnico + Papers With Code
+- Parceria com plataformas acadêmicas
+- Sistema de ligas e temporadas
