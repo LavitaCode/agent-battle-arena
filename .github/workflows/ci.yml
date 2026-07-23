@@ -7,8 +7,36 @@ on:
     branches: ["main"]
 
 jobs:
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      mode-a-backend: ${{ steps.filter.outputs.mode-a-backend }}
+      mode-a-frontend: ${{ steps.filter.outputs.mode-a-frontend }}
+      mode-b-live: ${{ steps.filter.outputs.mode-b-live }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            mode-a-backend:
+              - 'backend/**'
+              - 'requirements.txt'
+              - 'quests/**'
+              - '.github/workflows/ci.yml'
+            mode-a-frontend:
+              - 'frontend/**'
+              - '.github/workflows/ci.yml'
+            mode-b-live:
+              - 'backend-live/**'
+              - 'unity/**'
+              - '.github/workflows/ci.yml'
+
   backend-tests:
-    name: Backend tests (Python)
+    name: Backend tests (Python · Modo A)
+    needs: changes
+    if: needs.changes.outputs.mode-a-backend == 'true'
     runs-on: ubuntu-latest
 
     services:
@@ -45,7 +73,9 @@ jobs:
         run: python -m unittest discover -s backend/tests -p "test_*.py"
 
   frontend-build:
-    name: Frontend build (Angular)
+    name: Frontend build (Angular · Modo A)
+    needs: changes
+    if: needs.changes.outputs.mode-a-frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,3 +94,28 @@ jobs:
       - name: Build
         working-directory: frontend
         run: npm run build
+
+  backend-live-tests:
+    name: Backend Live tests (.NET · Modo B)
+    needs: changes
+    if: needs.changes.outputs.mode-b-live == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        working-directory: backend-live
+        run: dotnet restore
+
+      - name: Build
+        working-directory: backend-live
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        working-directory: backend-live
+        run: dotnet test --no-build --configuration Release --verbosity normal

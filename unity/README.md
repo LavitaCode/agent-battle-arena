@@ -2,7 +2,9 @@
 
 Cliente do **Modo B — Arena Live 3D** (**iOS / Android**). Scaffold UNI-01: empty scene, sem gameplay.
 
-O **Modo A — Arena Quests** (Angular, camadas, personalidade, judge) vive em `frontend/` + `quests/` e permanece ativo em paralelo — esta pasta não o substitui.
+API do Modo B: [`../backend-live/`](../backend-live/) (.NET 8, prefixo `/api/v1/live/`).
+
+O **Modo A — Arena Quests** (Angular + `backend/` Python) permanece ativo em paralelo — esta pasta não o substitui.
 
 ## Editor (versão travada)
 

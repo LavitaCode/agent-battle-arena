@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3D10650D-06E0-4BE6-A863-F3246687429A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentBattleArena.Live.Api", "src\AgentBattleArena.Live.Api\AgentBattleArena.Live.Api.csproj", "{8C8ED99E-290A-44B3-AB80-B460EB7A1F79}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F406C0C9-ED84-491D-B7A9-1DBADFA26C8A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentBattleArena.Live.Api.Tests", "tests\AgentBattleArena.Live.Api.Tests\AgentBattleArena.Live.Api.Tests.csproj", "{68CA84F7-D0C3-4617-AC1C-E144289C1511}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8C8ED99E-290A-44B3-AB80-B460EB7A1F79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C8ED99E-290A-44B3-AB80-B460EB7A1F79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C8ED99E-290A-44B3-AB80-B460EB7A1F79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C8ED99E-290A-44B3-AB80-B460EB7A1F79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68CA84F7-D0C3-4617-AC1C-E144289C1511}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68CA84F7-D0C3-4617-AC1C-E144289C1511}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68CA84F7-D0C3-4617-AC1C-E144289C1511}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68CA84F7-D0C3-4617-AC1C-E144289C1511}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8C8ED99E-290A-44B3-AB80-B460EB7A1F79} = {3D10650D-06E0-4BE6-A863-F3246687429A}
+		{68CA84F7-D0C3-4617-AC1C-E144289C1511} = {F406C0C9-ED84-491D-B7A9-1DBADFA26C8A}
+	EndGlobalSection
+EndGlobal
