@@ -47,7 +47,6 @@ jobs:
           MODE_A_FRONTEND="$(match '^frontend/')"
           MODE_B_LIVE="$(match '^(backend-live/|unity/|\.github/workflows/ci\.yml)')"
 
-          # On main push of the merge commit, if detection is empty, run all suites.
           if [ -z "$CHANGED" ]; then
             MODE_A_BACKEND=true
             MODE_A_FRONTEND=true
@@ -121,26 +120,19 @@ jobs:
         run: npm run build
 
   backend-live-tests:
-    name: Backend Live tests (.NET · Modo B)
+    name: Backend Live tests (Go · Modo B)
     needs: changes
     if: needs.changes.outputs.mode-b-live == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          dotnet-version: "8.0.x"
-
-      - name: Restore
-        working-directory: backend-live
-        run: dotnet restore
-
-      - name: Build
-        working-directory: backend-live
-        run: dotnet build --no-restore --configuration Release
+          go-version: "1.22.x"
+          cache-dependency-path: backend-live/go.sum
 
       - name: Test
         working-directory: backend-live
-        run: dotnet test --no-build --configuration Release --verbosity normal
+        run: go test ./...

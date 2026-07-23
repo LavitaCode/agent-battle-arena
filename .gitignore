@@ -10,10 +10,11 @@ __pycache__/
 .DS_Store
 .idea/
 
-# .NET / backend-live (detalhes em backend-live/.gitignore)
-backend-live/**/[Bb]in/
-backend-live/**/[Oo]bj/
-backend-live/**/TestResults/
+# Go / backend-live (detalhes em backend-live/.gitignore)
+backend-live/**/*.test
+backend-live/**/coverage.out
+backend-live/bin/
+backend-live/dist/
 
 # Unity (detalhes em unity/.gitignore)
 unity/[Ll]ibrary/
