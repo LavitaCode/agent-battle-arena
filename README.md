@@ -101,7 +101,7 @@ Cada template possui `locked_fields` (imutáveis) e `editable_sections` onde voc
 ## 🛠 Stack Tecnológica
 
 -   **Modo A (Quests):** Angular 21 + PrimeNG (`frontend/`) · API Python 3.11 + FastAPI (`backend/`).
--   **Modo B (Live 3D):** Unity 6.3 LTS (`unity/`, iOS/Android) · API .NET 8 ASP.NET Core (`backend-live/`).
+-   **Modo B (Live 3D):** Unity 6.3 LTS (`unity/`, iOS/Android) · API Go (`backend-live/`).
 -   **Runner (Sandbox · Modo A):**
     -   `local-process`: Execução via subprocessos (ideal para dev local).
     -   `docker`: Execução em containers isolados (ideal para produção/sandbox real).
