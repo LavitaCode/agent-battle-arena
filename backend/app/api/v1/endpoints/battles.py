@@ -1,5 +1,8 @@
 """Battle endpoints for the public alpha."""
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+import json
+from typing import Iterator
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 
 from ....core.config import settings
@@ -50,6 +53,33 @@ def create_battle(
         return service.create_battle(user, battle_in)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.get("/export")
+def export_battles(
+    request: Request,
+    format: str = Query("dpo", description="Export format. Only 'dpo' is supported."),
+    service: PublicAlphaService = Depends(get_public_alpha_service),
+):
+    """Export completed battles as a JSONL stream in the requested format."""
+    _require_user(request, service)
+    if format != "dpo":
+        raise HTTPException(status_code=400, detail=f"Unsupported format: {format!r}. Use 'dpo'.")
+
+    battles = service.store.list_completed_battles_for_export()
+    quests_by_id = {q.id: q for q in service.list_quests()}
+
+    from ...services.dpo_export_service import iter_dpo_pairs
+
+    def _stream() -> Iterator[str]:
+        for pair in iter_dpo_pairs(battles, quests_by_id):
+            yield json.dumps(pair, ensure_ascii=False) + "\n"
+
+    return StreamingResponse(
+        _stream(),
+        media_type="application/x-ndjson",
+        headers={"Content-Disposition": 'attachment; filename="battles_dpo.jsonl"'},
+    )
 
 
 @router.get("/{battle_id}", response_model=BattleDetail, summary="Detalhar battle")
