@@ -68,6 +68,15 @@ class LaunchReadinessTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertGreaterEqual(len(response.json()), 3)
 
+    def test_all_loaded_quests_have_non_empty_language(self) -> None:
+        repo = get_quest_repository()
+        quests = repo.list()
+        self.assertGreater(len(quests), 0)
+        for quest in quests:
+            with self.subTest(quest=quest.id):
+                self.assertIsInstance(quest.language, str)
+                self.assertTrue(quest.language, f"Quest {quest.id} has empty language field")
+
 
 if __name__ == "__main__":
     unittest.main()

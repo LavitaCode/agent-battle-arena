@@ -64,6 +64,7 @@ def _load_quest_definitions() -> List[QuestCreate]:
                 tests=tests,
                 scoring_profile=raw_data.get("scoring_profile", "standard_app_build_v1"),
                 cognitive_layers=raw_data.get("cognitive_layers", []),
+                language=raw_data.get("language", "python"),
                 instructions=(
                     f"Quest loaded from {quest_file.parent.relative_to(_quests_root())}."
                 ),
