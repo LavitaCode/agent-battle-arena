@@ -6,32 +6,57 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: read
+
 jobs:
   changes:
     name: Detect changed paths
     runs-on: ubuntu-latest
     outputs:
-      mode-a-backend: ${{ steps.filter.outputs.mode-a-backend }}
-      mode-a-frontend: ${{ steps.filter.outputs.mode-a-frontend }}
-      mode-b-live: ${{ steps.filter.outputs.mode-b-live }}
+      mode-a-backend: ${{ steps.filter.outputs.mode_a_backend }}
+      mode-a-frontend: ${{ steps.filter.outputs.mode_a_frontend }}
+      mode-b-live: ${{ steps.filter.outputs.mode_b_live }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
         with:
-          filters: |
-            mode-a-backend:
-              - 'backend/**'
-              - 'requirements.txt'
-              - 'quests/**'
-              - '.github/workflows/ci.yml'
-            mode-a-frontend:
-              - 'frontend/**'
-              - '.github/workflows/ci.yml'
-            mode-b-live:
-              - 'backend-live/**'
-              - 'unity/**'
-              - '.github/workflows/ci.yml'
+          fetch-depth: 0
+
+      - name: Compute path filters
+        id: filter
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+            if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+              BASE="HEAD^"
+            fi
+          fi
+          CHANGED="$(git diff --name-only "$BASE"...HEAD || true)"
+          echo "Changed files:"
+          echo "$CHANGED"
+
+          match() {
+            echo "$CHANGED" | grep -E "$1" >/dev/null && echo true || echo false
+          }
+
+          MODE_A_BACKEND="$(match '^(backend/|requirements\.txt|quests/)')"
+          MODE_A_FRONTEND="$(match '^frontend/')"
+          MODE_B_LIVE="$(match '^(backend-live/|unity/|\.github/workflows/ci\.yml)')"
+
+          # On main push of the merge commit, if detection is empty, run all suites.
+          if [ -z "$CHANGED" ]; then
+            MODE_A_BACKEND=true
+            MODE_A_FRONTEND=true
+            MODE_B_LIVE=true
+          fi
+
+          echo "mode_a_backend=$MODE_A_BACKEND" >> "$GITHUB_OUTPUT"
+          echo "mode_a_frontend=$MODE_A_FRONTEND" >> "$GITHUB_OUTPUT"
+          echo "mode_b_live=$MODE_B_LIVE" >> "$GITHUB_OUTPUT"
 
   backend-tests:
     name: Backend tests (Python · Modo A)
